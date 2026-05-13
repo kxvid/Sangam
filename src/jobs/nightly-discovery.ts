@@ -52,33 +52,53 @@ export async function runDiscovery() {
       }
     }
 
-    const upsert = await supabase
-      .from("buyers")
-      .upsert(
-        {
-          full_name: fullName,
-          entity_name: entity,
-          phone,
-          email,
-          primary_region: r.PropertyCity ?? null,
-          total_properties_owned: r.TotalPropertiesOwned ?? 0,
-          last_purchase_date: r.LastSaleDate ?? null,
-          source: "propertyradar",
-          source_confidence: 5,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "phone", ignoreDuplicates: false },
-      )
-      .select();
-
-    if (upsert.error) {
-      errors.push(`Upsert ${r.RadarID}: ${upsert.error.message}`);
+    // Determine insert vs update by looking up first. The unique indexes on
+    // phone/email are partial (only when not null), so we can't rely on
+    // upsert(onConflict=...) for null-phone rows.
+    const existingQ = supabase.from("buyers").select("id").limit(1);
+    if (phone) existingQ.eq("phone", phone);
+    else if (email) existingQ.eq("email", email);
+    else if (entity && r.PropertyCity) {
+      existingQ.eq("entity_name", entity).eq("primary_region", r.PropertyCity);
+    } else {
+      existingQ.eq("entity_name", entity ?? "__never_match__");
+    }
+    const { data: existing, error: lookupErr } = await existingQ;
+    if (lookupErr) {
+      errors.push(`Lookup ${r.RadarID}: ${lookupErr.message}`);
       continue;
     }
-    if (upsert.data?.length) {
-      added += 1;
-    } else {
+
+    const payload = {
+      full_name: fullName,
+      entity_name: entity,
+      phone,
+      email,
+      primary_region: r.PropertyCity ?? null,
+      total_properties_owned: r.TotalPropertiesOwned ?? 0,
+      last_purchase_date: r.LastSaleDate ?? null,
+      source: "propertyradar",
+      source_confidence: 5,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (existing && existing.length > 0) {
+      const { error: uErr } = await supabase
+        .from("buyers")
+        .update(payload)
+        .eq("id", existing[0].id);
+      if (uErr) {
+        errors.push(`Update ${r.RadarID}: ${uErr.message}`);
+        continue;
+      }
       updated += 1;
+    } else {
+      const { error: iErr } = await supabase.from("buyers").insert(payload);
+      if (iErr) {
+        errors.push(`Insert ${r.RadarID}: ${iErr.message}`);
+        continue;
+      }
+      added += 1;
     }
   }
 
