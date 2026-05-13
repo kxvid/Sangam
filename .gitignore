@@ -12,3 +12,4 @@ coverage/
 .claude/settings.local.json
 .next/
 next-env.d.ts
+tsconfig.tsbuildinfo
