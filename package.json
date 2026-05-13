@@ -1,0 +1,31 @@
+{
+  "name": "kahla-buyer-network",
+  "version": "0.1.0",
+  "private": true,
+  "description": "KAHLA STUDIO Cash Buyer Network — scored buyer DB + matchmaking for CA wholesalers.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "score-deal": "tsx src/jobs/score-deal.ts",
+    "discovery": "tsx src/jobs/nightly-discovery.ts",
+    "match": "tsx src/jobs/match-buyers.ts",
+    "outreach": "tsx src/jobs/send-outreach.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "dotenv": "^16.4.5",
+    "playwright": "^1.47.0",
+    "resend": "^4.0.0",
+    "twilio": "^5.3.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}
