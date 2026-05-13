@@ -1,13 +1,19 @@
-import { createClient } from "@supabase/supabase-js";
-import "dotenv/config";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-const url = process.env.SUPABASE_URL;
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+let _client: SupabaseClient | null = null;
 
-if (!url || !serviceKey) {
-  throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY required");
+function build(): SupabaseClient {
+  const url = process.env.SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) {
+    throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY required");
+  }
+  return createClient(url, serviceKey, { auth: { persistSession: false } });
 }
 
-export const supabase = createClient(url, serviceKey, {
-  auth: { persistSession: false },
+export const supabase = new Proxy({} as SupabaseClient, {
+  get(_t, prop) {
+    if (!_client) _client = build();
+    return Reflect.get(_client, prop, _client);
+  },
 });

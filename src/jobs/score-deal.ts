@@ -1,39 +1,43 @@
-import { supabase } from "../lib/supabase.js";
-import { getProperty, getSaleAvm, type RentCastAvm } from "../lib/rentcast.js";
+import { supabase } from "../lib/supabase";
+import { getProperty, getSaleAvm, type RentCastAvm } from "../lib/rentcast";
+import type { Deal } from "../types";
 
-type RepairTier = "cosmetic" | "gut" | "addition";
+export type RepairTier = "cosmetic" | "gut" | "addition";
 
-type Args = {
+export type ScoreDealInput = {
   address: string;
   askingPrice: number;
   claimedArv?: number;
   repairTier?: RepairTier;
 };
 
-function parseArgs(): Args {
-  const argv = process.argv.slice(2);
-  if (argv.length < 2) {
-    throw new Error(
-      'Usage: tsx src/jobs/score-deal.ts "<address>" <asking> [claimed_arv] [--repairs=cosmetic|gut|addition]',
-    );
-  }
-  const flags = argv.filter((a) => a.startsWith("--"));
-  const positional = argv.filter((a) => !a.startsWith("--"));
-  const [address, ask, claimed] = positional;
-  const repairFlag = flags.find((f) => f.startsWith("--repairs="));
-  const tier = repairFlag?.split("=")[1] as RepairTier | undefined;
-  return {
-    address,
-    askingPrice: Number(ask),
-    claimedArv: claimed ? Number(claimed) : undefined,
-    repairTier: tier ?? "gut",
-  };
-}
+export type QualifiedComp = {
+  address: string;
+  beds: number;
+  baths: number;
+  sqft: number;
+  price: number;
+  soldDate: string;
+  pricePerSqft: number;
+};
+
+export type ScoreDealResult = {
+  deal: Deal;
+  arv: number;
+  arvBasis: string;
+  repairs: number;
+  repairTier: RepairTier;
+  mao: number;
+  score: number;
+  status: "new" | "dead";
+  killReasons: string[];
+  comps: QualifiedComp[];
+  claimVsReality: { claimed: number; computed: number; deltaPct: number } | null;
+};
 
 function parseLocation(address: string): { zip: string | null; region: string | null } {
   const zipMatch = address.match(/\b(\d{5})(?:-\d{4})?\b/);
   const parts = address.split(",").map((s) => s.trim());
-  // "229 Angus Ave E, San Bruno, CA 94066" -> ["...","San Bruno","CA 94066"]
   const region = parts.length >= 2 ? parts[parts.length - 2] : null;
   return { zip: zipMatch ? zipMatch[1] : null, region };
 }
@@ -49,27 +53,18 @@ function median(nums: number[]): number {
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
-function daysSince(iso: string | undefined): number {
+function daysSince(iso: string | undefined | null): number {
   if (!iso) return Number.POSITIVE_INFINITY;
   const t = Date.parse(iso);
   if (Number.isNaN(t)) return Number.POSITIVE_INFINITY;
   return (Date.now() - t) / (24 * 3600 * 1000);
 }
 
-type QualifiedComp = {
-  address: string;
-  beds: number;
-  baths: number;
-  sqft: number;
-  price: number;
-  soldDate: string;
-  pricePerSqft: number;
-};
-
 function filterComps(
   comps: RentCastAvm["comparables"],
   subject: { beds: number; baths: number; sqft: number },
 ): QualifiedComp[] {
+  if (subject.sqft <= 0) return [];
   const minSqft = subject.sqft * 0.8;
   const maxSqft = subject.sqft * 1.2;
 
@@ -77,8 +72,7 @@ function filterComps(
   for (const c of comps ?? []) {
     if (!c.squareFootage || !c.price) continue;
     const soldDate = c.removedDate ?? c.listedDate ?? "";
-    const age = daysSince(soldDate);
-    if (age > 180) continue;
+    if (daysSince(soldDate) > 180) continue;
     if (Math.abs((c.bedrooms ?? 0) - subject.beds) > 1) continue;
     if (Math.abs((c.bathrooms ?? 0) - subject.baths) > 0.5) continue;
     if (c.squareFootage < minSqft || c.squareFootage > maxSqft) continue;
@@ -95,75 +89,79 @@ function filterComps(
   }
 
   if (qualified.length === 0) return qualified;
-  // Reject extreme outliers in $/sqft (>1.5x or <0.5x of running median).
   const med = median(qualified.map((c) => c.pricePerSqft));
   return qualified.filter((c) => c.pricePerSqft >= med * 0.5 && c.pricePerSqft <= med * 1.5);
 }
 
-function score(arv: number, repairs: number, asking: number): number {
+function computeScore(arv: number, repairs: number, asking: number): number {
   if (arv <= 0) return 0;
   const mao = arv * 0.7 - repairs;
   const raw = 100 * ((mao - asking) / Math.max(1, mao) + 0.3);
   return Math.max(0, Math.min(100, Math.round(raw)));
 }
 
-export async function scoreDeal(args: Args) {
-  const subject = await getProperty(args.address);
-  const avm = await getSaleAvm(args.address);
-  const { zip, region } = parseLocation(args.address);
+export async function scoreDeal(input: ScoreDealInput): Promise<ScoreDealResult> {
+  const subject = await getProperty(input.address);
+  const avm = await getSaleAvm(input.address);
+  const { zip, region } = parseLocation(input.address);
 
   const sqft = subject.squareFootage ?? 0;
   const beds = subject.bedrooms ?? 0;
   const baths = subject.bathrooms ?? 0;
 
-  const qualified = filterComps(avm.comparables ?? [], { beds, baths, sqft });
+  const comps = filterComps(avm.comparables ?? [], { beds, baths, sqft });
 
   let arv: number;
   let arvBasis: string;
-  if (qualified.length >= 3 && sqft > 0) {
-    const medianPpsf = median(qualified.map((c) => c.pricePerSqft));
+  if (comps.length >= 3 && sqft > 0) {
+    const medianPpsf = median(comps.map((c) => c.pricePerSqft));
     arv = Math.round(medianPpsf * sqft);
-    arvBasis = `median $/sqft of ${qualified.length} qualified comps × ${sqft} sqft`;
+    arvBasis = `median $/sqft of ${comps.length} qualified comps × ${sqft} sqft`;
   } else {
     arv = Math.round(avm.price ?? 0);
-    arvBasis = `RentCast AVM fallback (only ${qualified.length} qualified comps found)`;
+    arvBasis = `RentCast AVM fallback (only ${comps.length} qualified comps)`;
   }
 
-  const tier = args.repairTier ?? "gut";
-  const repairs = Math.round(sqft * repairPerSqft(tier));
+  const repairTier = input.repairTier ?? "gut";
+  const repairs = Math.round(sqft * repairPerSqft(repairTier));
   const mao = Math.round(arv * 0.7 - repairs);
-  const dealScore = score(arv, repairs, args.askingPrice);
+  const score = computeScore(arv, repairs, input.askingPrice);
 
   const killReasons: string[] = [];
 
-  if (qualified.length < 3) {
+  if (comps.length < 3) {
     killReasons.push(
-      `Only ${qualified.length} qualified comps found within 180d / bed±1 / bath±0.5 / sqft±20% (need 3+)`,
+      `Only ${comps.length} qualified comps found within 180d / bed±1 / bath±0.5 / sqft±20% (need 3+)`,
     );
   }
 
-  if (args.askingPrice > arv * 0.85) {
+  if (input.askingPrice > arv * 0.85) {
     killReasons.push(
-      `Asking $${args.askingPrice.toLocaleString()} exceeds 85% of computed ARV ($${arv.toLocaleString()} × 0.85 = $${Math.round(arv * 0.85).toLocaleString()})`,
+      `Asking $${input.askingPrice.toLocaleString()} exceeds 85% of computed ARV ($${arv.toLocaleString()})`,
     );
   }
 
   const lastSalePrice = subject.lastSalePrice ?? 0;
   const lastSaleAge = daysSince(subject.lastSaleDate);
-  if (lastSaleAge <= 90 && lastSalePrice > 0 && lastSalePrice < args.askingPrice * 0.8) {
+  if (lastSaleAge <= 90 && lastSalePrice > 0 && lastSalePrice < input.askingPrice * 0.8) {
     killReasons.push(
-      `Subject sold $${lastSalePrice.toLocaleString()} on ${subject.lastSaleDate} (${Math.round(lastSaleAge)}d ago), current ask is ${Math.round((args.askingPrice / lastSalePrice - 1) * 100)}% markup over recent arms-length sale with no improvements (markup play, not motivated seller)`,
+      `Subject sold $${lastSalePrice.toLocaleString()} on ${subject.lastSaleDate} (${Math.round(lastSaleAge)}d ago), current ask is a ${Math.round((input.askingPrice / lastSalePrice - 1) * 100)}% markup over recent arms-length sale — markup play, not motivated seller`,
     );
   }
 
-  if (args.claimedArv && args.claimedArv > arv * 1.2) {
-    killReasons.push(
-      `Wholesaler claimed ARV $${args.claimedArv.toLocaleString()} is ${Math.round((args.claimedArv / arv - 1) * 100)}% above computed ARV $${arv.toLocaleString()} — likely inflated comp (different school zone, view, or topography class)`,
-    );
+  let claimVsReality: ScoreDealResult["claimVsReality"] = null;
+  if (input.claimedArv) {
+    const deltaPct = Math.round((input.claimedArv / Math.max(1, arv) - 1) * 100);
+    claimVsReality = { claimed: input.claimedArv, computed: arv, deltaPct };
+    if (input.claimedArv > arv * 1.2) {
+      killReasons.push(
+        `Wholesaler claimed ARV $${input.claimedArv.toLocaleString()} is ${deltaPct}% above computed ARV — likely inflated comp (different school zone, view, or topography)`,
+      );
+    }
   }
 
-  if (dealScore < 30) {
-    killReasons.push(`Score ${dealScore} below kill threshold of 30`);
+  if (score < 30) {
+    killReasons.push(`Score ${score} below kill threshold of 30`);
   }
 
   const status: "new" | "dead" = killReasons.length > 0 ? "dead" : "new";
@@ -172,16 +170,16 @@ export async function scoreDeal(args: Args) {
   const { data, error } = await supabase
     .from("deals")
     .insert({
-      address: args.address,
+      address: input.address,
       zip,
       region,
-      asking_price: args.askingPrice,
+      asking_price: input.askingPrice,
       est_arv: arv,
       est_repairs: repairs,
       beds,
       baths,
       sqft,
-      deal_score: dealScore,
+      deal_score: score,
       status,
       kill_reason: killReason,
     })
@@ -190,35 +188,63 @@ export async function scoreDeal(args: Args) {
 
   if (error) throw error;
 
-  console.log(`DEAL: ${args.address}`);
-  console.log(`ASKING: $${args.askingPrice.toLocaleString()}`);
-  console.log(`ARV (computed): $${arv.toLocaleString()}  [${arvBasis}]`);
-  console.log(`REPAIRS (${tier} @ $${repairPerSqft(tier)}/sqft): $${repairs.toLocaleString()}`);
-  console.log(`MAO: $${mao.toLocaleString()}`);
-  console.log(`SCORE: ${dealScore}`);
-  console.log(`STATUS: ${status}`);
-  if (killReason) console.log(`KILL REASON: ${killReason}`);
+  return {
+    deal: data as Deal,
+    arv,
+    arvBasis,
+    repairs,
+    repairTier,
+    mao,
+    score,
+    status,
+    killReasons,
+    comps,
+    claimVsReality,
+  };
+}
 
-  console.log(`\nCOMPS USED (${qualified.length}):`);
-  for (const c of qualified.slice(0, 5)) {
-    console.log(
-      `- ${c.address}: ${c.beds}/${c.baths}, ${c.sqft} sqft, sold $${c.price.toLocaleString()} on ${c.soldDate} ($${Math.round(c.pricePerSqft)}/sqft)`,
+function parseCliArgs(): ScoreDealInput {
+  const argv = process.argv.slice(2);
+  if (argv.length < 2) {
+    throw new Error(
+      'Usage: tsx src/jobs/score-deal.ts "<address>" <asking> [claimed_arv] [--repairs=cosmetic|gut|addition]',
     );
   }
-
-  if (args.claimedArv) {
-    console.log(
-      `\nWHOLESALER CLAIM vs REALITY: claimed $${args.claimedArv.toLocaleString()} / computed $${arv.toLocaleString()} (${Math.round((args.claimedArv / Math.max(1, arv) - 1) * 100)}% delta)`,
-    );
-  }
-
-  console.log(`\nDEAL ID: ${data.id}`);
-  return data;
+  const flags = argv.filter((a) => a.startsWith("--"));
+  const positional = argv.filter((a) => !a.startsWith("--"));
+  const [address, ask, claimed] = positional;
+  const tier = flags.find((f) => f.startsWith("--repairs="))?.split("=")[1] as
+    | RepairTier
+    | undefined;
+  return {
+    address,
+    askingPrice: Number(ask),
+    claimedArv: claimed ? Number(claimed) : undefined,
+    repairTier: tier ?? "gut",
+  };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  scoreDeal(parseArgs()).catch((e) => {
-    console.error(e);
-    process.exit(1);
-  });
+  scoreDeal(parseCliArgs())
+    .then((r) => {
+      console.log(`DEAL: ${r.deal.address}`);
+      console.log(`ASKING: $${r.deal.asking_price?.toLocaleString()}`);
+      console.log(`ARV: $${r.arv.toLocaleString()}  [${r.arvBasis}]`);
+      console.log(`REPAIRS (${r.repairTier}): $${r.repairs.toLocaleString()}`);
+      console.log(`MAO: $${r.mao.toLocaleString()}`);
+      console.log(`SCORE: ${r.score}`);
+      console.log(`STATUS: ${r.status}`);
+      if (r.killReasons.length) console.log(`KILL REASONS:\n - ${r.killReasons.join("\n - ")}`);
+      console.log(`\nCOMPS (${r.comps.length}):`);
+      for (const c of r.comps.slice(0, 5)) {
+        console.log(
+          `- ${c.address}: ${c.beds}/${c.baths}, ${c.sqft} sqft, sold $${c.price.toLocaleString()} on ${c.soldDate} ($${Math.round(c.pricePerSqft)}/sqft)`,
+        );
+      }
+      console.log(`\nDEAL ID: ${r.deal.id}`);
+    })
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    });
 }

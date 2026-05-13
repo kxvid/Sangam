@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: theme("colors.ink.950");
+  color: theme("colors.ink.100");
+  font-feature-settings: "ss01" on, "cv11" on;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-ink-800 bg-ink-900/70 backdrop-blur shadow-card;
+  }
+
+  .input,
+  .form-input,
+  .form-select,
+  .form-textarea {
+    @apply rounded-lg border border-ink-700 bg-ink-900 text-ink-100 placeholder-ink-400
+      focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/60;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium
+      transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply bg-emerald-500 text-ink-950 hover:bg-emerald-400 focus:outline-none
+      focus:ring-2 focus:ring-emerald-400/40;
+  }
+
+  .btn-ghost {
+    @apply border border-ink-700 text-ink-100 hover:bg-ink-800;
+  }
+
+  .btn-danger {
+    @apply bg-red-500/10 text-red-300 hover:bg-red-500/20 border border-red-500/30;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium;
+  }
+
+  .badge-alive {
+    @apply border-emerald-500/30 bg-emerald-500/10 text-emerald-300;
+  }
+
+  .badge-dead {
+    @apply border-red-500/30 bg-red-500/10 text-red-300;
+  }
+
+  .badge-warn {
+    @apply border-amber-500/30 bg-amber-500/10 text-amber-300;
+  }
+
+  .badge-muted {
+    @apply border-ink-700 bg-ink-800 text-ink-300;
+  }
+
+  .table-row {
+    @apply border-b border-ink-800 hover:bg-ink-800/60 transition-colors;
+  }
+}
+
+::selection {
+  background: theme("colors.emerald.500");
+  color: theme("colors.ink.950");
+}

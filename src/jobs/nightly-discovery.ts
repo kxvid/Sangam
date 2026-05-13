@@ -1,10 +1,17 @@
-import { supabase } from "../lib/supabase.js";
-import { fetchCashBuyers } from "../lib/propertyradar.js";
-import { skipTrace } from "../lib/skiptrace.js";
+import { supabase } from "../lib/supabase";
+import { fetchCashBuyers } from "../lib/propertyradar";
+import { skipTrace } from "../lib/skiptrace";
 
 const SKIP_TRACE_BUDGET_USD = 20;
 
-export async function runDiscovery() {
+export type DiscoveryResult = {
+  added: number;
+  updated: number;
+  spent: number;
+  errors: string[];
+};
+
+export async function runDiscovery(): Promise<DiscoveryResult> {
   const errors: string[] = [];
   let added = 0;
   let updated = 0;
@@ -52,18 +59,15 @@ export async function runDiscovery() {
       }
     }
 
-    // Determine insert vs update by looking up first. The unique indexes on
-    // phone/email are partial (only when not null), so we can't rely on
-    // upsert(onConflict=...) for null-phone rows.
-    const existingQ = supabase.from("buyers").select("id").limit(1);
-    if (phone) existingQ.eq("phone", phone);
-    else if (email) existingQ.eq("email", email);
+    let lookup = supabase.from("buyers").select("id").limit(1);
+    if (phone) lookup = lookup.eq("phone", phone);
+    else if (email) lookup = lookup.eq("email", email);
     else if (entity && r.PropertyCity) {
-      existingQ.eq("entity_name", entity).eq("primary_region", r.PropertyCity);
+      lookup = lookup.eq("entity_name", entity).eq("primary_region", r.PropertyCity);
     } else {
-      existingQ.eq("entity_name", entity ?? "__never_match__");
+      lookup = lookup.eq("entity_name", entity ?? "__never_match__");
     }
-    const { data: existing, error: lookupErr } = await existingQ;
+    const { data: existing, error: lookupErr } = await lookup;
     if (lookupErr) {
       errors.push(`Lookup ${r.RadarID}: ${lookupErr.message}`);
       continue;
@@ -109,17 +113,20 @@ export async function runDiscovery() {
     errors: errors.length ? errors.join("\n") : null,
   });
 
-  console.log("DISCOVERY RUN COMPLETE");
-  console.log(`Source: propertyradar`);
-  console.log(`Buyers added: ${added}`);
-  console.log(`Buyers updated: ${updated}`);
-  console.log(`Skip-trace spent: $${spent.toFixed(2)}`);
-  if (errors.length) console.log(`Errors:\n${errors.join("\n")}`);
+  return { added, updated, spent, errors };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  runDiscovery().catch((e) => {
-    console.error(e);
-    process.exit(1);
-  });
+  runDiscovery()
+    .then((r) => {
+      console.log("DISCOVERY RUN COMPLETE");
+      console.log(`Buyers added: ${r.added}`);
+      console.log(`Buyers updated: ${r.updated}`);
+      console.log(`Skip-trace spent: $${r.spent.toFixed(2)}`);
+      if (r.errors.length) console.log(`Errors:\n${r.errors.join("\n")}`);
+    })
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    });
 }
