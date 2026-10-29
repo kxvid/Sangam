@@ -34,3 +34,24 @@ Kahla Labs LLC operates the pilot in Riverside and San Bernardino Counties. The 
 ## Release evidence
 
 See the implementation ledger and deployment guide for test results and outstanding deployment steps. A passed test suite does not mark a professional, commercial or operational gate complete.
+
+
+## Automated export processing and decision-tree release —2026-10-28
+
+User authorization: build sourcing and matching into the live app, keep mail/calling manual. Source choice: **PropStream exports only for now**. The following supersedes earlier descriptions of background processing as future work.
+
+| Original or earlier implementation | Change | Why |
+|---|---|---|
+| Nightly provider pulls/API if available | Upload an authorized PropStream export; durable background jobs validate, dedupe, score and match it; scheduled refreshes use existing data | Matches the selected data route without assuming API access or scraping rights. The export step remains manual. |
+| One bounded operational JSON document | Separate normalized source, rule-version, job, research-record, decision-history and automation-audit tables | Avoids turning the manual transaction document into an ingestion history store. |
+| Fixed seller/buyer rubric only | Editable typed decision trees with immutable published versions, dry runs, conditions and stable hashes | Explains fit and supports controlled tuning while keeping original seller weights/8-point threshold as the default. |
+| Missing signals treated only as absent score | Unknown conditions produce review; unknown ranking facts produce score ranges | Avoids manufacturing facts or silently passing missing buyer rehab/price criteria. |
+| Tenant-controlled ranking | Independent source, freshness, suppression, county, practice and buyer/contract constraints | A custom rule cannot remove the platform requirements. |
+| Automatic top10buyer alerts | Automatic buyer reevaluation after relevant saved changes and scheduled refresh; results remain in-app | Speeds selection while preserving manual packet approval and delivery. |
+| Refresh could be mistaken for new collection | Original source dates and exact facts stay unchanged on refresh | Prevents stale data appearing newly sourced. |
+| Best-effort nightly script | Durable idempotent jobs, leases, bounded retries and monthly processing caps | Recovers interrupted requests and avoids duplicate work or runaway processing. |
+| Source permission checked at first import | Current source rights checked at collection, commit, promotion and manual batch/packet preparation/export | Revocation must stop new use even after a lead enters Acquisition. |
+| Single research list | Pages of250 records plus independent record lookup | Makes every accepted500-row export reviewable without an unbounded browser response. |
+| Production setup only | Verified-domain login, isolated practice workspace, protected previews and production-only scheduler secret | Separates real operation from testing and protects job endpoints. |
+
+No automated messages/calls, actual business milestones, legal approvals, source licenses, paid data services, billing, or subscription entitlements are created by this release. Hosting/database processing may consume existing plan allowances; no new paid plan is purchased. Existing production backup/recovery and real evidence prerequisites remain.

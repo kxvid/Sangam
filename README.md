@@ -1,8 +1,8 @@
-# Sangam — Acquisition
+# Sangam — Acquisition intelligence
 
 A private workspace for Kahla Labs LLC's Inland Empire pilot: import authorized seller data, score leads, review evidence and exact outreach materials, export mail and manual calling batches, record real outcomes, and match contracted deals to permitted buyers.
 
-**Mail and calls are manual.** No SMS, email, automated calls, scraping, skip tracing, AI requests or provider discovery runs in this release. Exporting a file does not mark a touch or start the pilot clock.
+**Mail and calls are manual.** Authorized uploaded exports are validated, deduplicated, scored and matched automatically. Scheduled refreshes re-evaluate stored records without changing their source dates. No SMS, email, automated calls, scraping, skip tracing, AI requests or provider fetching runs in this release. Exporting a file does not mark a touch or start the pilot clock.
 
 ## Start here
 
@@ -18,7 +18,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open `/acquisition`. A Clerk account alone does not grant data access: an administrator must explicitly add an active workspace membership. Historical routes redirect to the desk; historical send/discovery endpoints and CLI jobs are disabled.
+Open `/acquisition` for manual operations and `/automation` for Sources, Rules, Jobs and Matches. A Clerk account alone does not grant data access: an administrator must explicitly add an active workspace membership. Historical routes redirect to the desk; historical send/discovery endpoints and CLI jobs are disabled.
 
 ## Verification
 
@@ -34,6 +34,6 @@ Database tests use a disposable PostgreSQL instance; see the deployment guide fo
 
 ## Data and authorization
 
-Acquisition uses a bounded JSON workspace document with transactional optimistic concurrency, independent database membership checks and append-only audit entries. All mutations run through validated server commands. Each workspace is isolated; browser clients cannot directly mutate operational state. Existing unowned legacy rows are quarantined by the migration, not assigned to the first signup.
+Acquisition uses a bounded JSON workspace document with transactional optimistic concurrency, independent database membership checks and append-only audit entries. Sources, immutable rule revisions, durable jobs, research records and explained decisions use separate normalized tables. All mutations run through validated server commands. Each workspace is isolated; browser clients cannot directly mutate operational state. Existing unowned legacy rows are quarantined by the migration, not assigned to the first signup.
 
-This is a private pilot product, not a completed public subscription service. Production deployment, membership provisioning, reviewed operational evidence and restore verification remain explicit release steps. Hosting, authentication, storage and support costs are additional to the original operating budget and must be verified for the selected plans.
+This is a private pilot product, not a completed public subscription service. Membership provisioning, reviewed operational evidence and production restore verification remain explicit operating prerequisites. Hosting, authentication, storage and support costs are additional to the original operating budget and must be verified for the selected plans.
