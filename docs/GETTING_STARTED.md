@@ -115,3 +115,10 @@ Use **Record an expense** for actual vendor/setup costs with their dates and rec
 If a form says the workspace changed, refresh and review before retrying. If a save or connection is unconfirmed, refresh and inspect the record first. Never retry a physical mail order or contact because a screen was slow. Use the recorded external receipt to reconcile.
 
 See [the changes ledger](SPEC-CHANGES.md) for deviations from the original spec and [deployment/recovery](DEPLOY.md) for administrator steps. No part of this guide supplies professional approval or an authorization to contact a specific person.
+
+
+## Later first-batch checkpoint — October 29, 2026
+
+Eight of the initial 23 records now have explicit matching property-detail evidence supporting **score 9**, saved in live Sangam; the remaining 15 retain score 7. Eight included PropWire traces completed at **$0**, leaving two credits, after phone verification and explicit provider-terms approval. The private preparation packet preserves **22 distinct phone candidates**, including five vendor DNC flags. Seven unflagged first candidates are selected only for screening; one lead has no selected number because both returned numbers are DNC-marked. An absent flag is unknown, not clear.
+
+This is a held review packet with unapproved copy, not a released mail/call batch. Obtain genuine owner-contact association, current DNC/litigator results, call-timezone evidence and the remaining gate/template/batch reviews before use. No scrub timestamp is inferred from a trace date. Emails are unused, and no outreach or actual launch occurred. See [current evidence and holds](FREE-LEAD-FIRST-BATCH.md#later-verification-and-free-traces--october-29-2026). The initial import descriptions earlier in this guide remain the historical starting result.

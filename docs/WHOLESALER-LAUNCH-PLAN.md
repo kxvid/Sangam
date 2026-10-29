@@ -113,3 +113,12 @@ The official AB 1850 status page was read in Browser after the text fetch failed
 - Isolated backup verification tooling and a production recovery runbook; real production backup evidence remains required.
 
 The county, preview and recovery supporting tools are local preparation until reviewed, tested and released. The completed seller import used the existing live app and did not change provider/outreach settings. The [changes ledger](SPEC-CHANGES.md) distinguishes these decisions from earlier implemented behavior. No services were purchased, people contacted, professional gates approved or business milestones recorded.
+
+
+## Later operating update — October 29, 2026
+
+Following the initial import above, eight records received matching per-property absentee/vacant/off-market evidence and were saved in live Sangam at **score 9**; the other 15 remain at score 7. The rubric and threshold are unchanged. Current title, authority, source freshness and contact identity remain separate checks.
+
+After required phone verification and the operator's explicit trace-terms approval, **eight free traces completed for $0**, leaving **two included credits**. They returned **22 distinct phone candidates**, five explicitly vendor-DNC-marked. One lead has only DNC-marked candidates and no selected calling number; seven unflagged first candidates are held for screening. Unflagged means unknown, not clear. Litigator screening and recipient timezone evidence are missing. Emails remain private and unused.
+
+The private first-batch packet and unapproved mail/call drafts are prepared, **not released**. Counsel and the remaining operational evidence, genuine contact screening, business reply details and exact template/batch reviews still block outreach. No professional gate, touch, offer, contract, fee or actual launch was created. Data-service spend remains $0; postage, screening and operating costs remain outside that claim. See the [updated first-batch guide](FREE-LEAD-FIRST-BATCH.md#later-verification-and-free-traces--october-29-2026) and [change ledger](SPEC-CHANGES.md#first-verified-candidates-and-free-contact-enrichment--october-29-2026).
