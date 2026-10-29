@@ -1,236 +1,95 @@
-# Getting Started — KAHLA Cash Buyer Network
+# Use Sangam Acquisition
 
-A walk-through for someone who has never run this project. Assumes you can open a terminal, install Node, and copy/paste API keys.
+Open **Acquisition** and choose your workspace. For the first real pilot this is Kahla Labs LLC. Everything stays manual: Sangam prepares files and keeps records; you place mail orders, dial calls and deliver buyer packets yourself.
 
----
+## Practice before using real records
 
-## 1. What this thing actually does
+Use a separate test workspace and the **Practice data** checkbox when importing wholly fictional records. Practice exports are marked **SYNTHETIC EXERCISE — DO NOT CONTACT**, and practice activity never starts the real pilot clock or contributes to its targets. Do not label real sellers as practice to bypass evidence checks. Practice contacts must use reserved 555-0100–0199 phone numbers, reserved example/test email domains, and visibly fictional names/addresses. Exported practice destinations are deliberately unusable. The repository browser test runs an entire fictional workflow in memory without touching your hosted workspace.
 
-You give it a property address + asking price. It tells you whether the deal is real (score 0-100). If the deal is real, it picks the 20 most likely cash buyers from your database and sends each one a personalized SMS or email. You make money charging wholesalers $1,500-3,000/month to use it.
+The operator sequence is: Import → Seller leads → Mail & calls → record actual activity → qualify and underwrite → record offer and signed contract → Contracts & buyers → reviewed packet → actual delivery → signed assignment → closing. An export or a button click is never proof that a contract was signed, a person contacted or money received.
 
-Four moving parts:
+## Prepare the PropStream export
 
-| Piece | What it does | When you run it |
-|---|---|---|
-| **Deal Sizer** | Pulls comps, computes ARV, applies 70% rule, scores 0-100 | Every time a wholesaler sends you a deal |
-| **Buyer Hunter** | Discovers new cash buyers from PropertyRadar etc. and writes them to the DB | Once a night (cron later, manual for now) |
-| **Matcher** | Ranks the top 20 buyers for a specific scored deal | After a deal scores ≥ 30 |
-| **Outreach** | Sends personalized SMS + email to those 20 buyers | After matcher returns a list and you say "go" |
+In your authorized PropStream account, use the Riverside/San Bernardino farm lists from the original SOP. Retain each relevant distress signal, including notice of default; do not remove a flag to make a lead eligible. The starter ZIPs are:
 
----
+`92501, 92503, 92505, 92507, 92401, 92404, 92408, 92410, 92551, 92553, 92555, 92335, 92336, 91761, 91762, 92376, 92324`
 
-## 2. One-time setup
+Download the seller data using your account's available export option. Export screens/field names can vary by vendor plan; this guide specifies Sangam's required mapping, not a claim of access to your PropStream account. Use **Import → CSV template**, rename/map source columns to those headers, and save as UTF-8 CSV. Keep the raw export privately for source verification.
 
-### 2a. Install Node 22 and clone the repo
+| Sangam column | What to put in it |
+|---|---|
+| `county` | Riverside or San Bernardino; required. |
+| `apn` | Parcel number as text, preserving leading zeros; required. |
+| `address` | Property street address; required. |
+| `owner_name` | Current owner name/entity from the source; required. |
+| `city`, `zip` | Property city and five-digit ZIP. ZIP is needed for farm eligibility. |
+| `mailing_address` | Owner mailing destination as `street, city ST ZIP`; quote CSV fields containing commas. Do not substitute the subject address unless it is the verified owner mailing address. |
+| `phone` | One selected US phone number, with its source retained. Do not combine numbers in one cell. |
+| `email` | Optional valid email; the app does not send it. |
+| `property_type` | A consistent value such as SFR, CONDO or 2–4 UNIT, matching buyer profiles. |
+| `estimated_value`, `equity_pct` | Known source values; equity is 0–100, not a decimal fraction. |
+| `tax_delinquent_years`, `years_owned` | Known nonnegative numbers, otherwise blank. Do not convert a generic delinquent flag to '2 years'. |
+| `nod`, `vacant`, `absentee`, `inherited`, `code_violations` | `true/false`, `yes/no` or `1/0`; leave unknown facts blank. |
+| `notes` | Useful source notes; no passwords/API keys. |
 
-```bash
-node --version    # need v22.x
-git clone <this-repo>
-cd Sangam
-npm install
-```
+Optional supported columns: `beds`, `baths`, `sqft`, `year_built`, `last_sale_date`, `last_sale_price`. These are retained as source notes in this pilot. The importer deliberately rejects unsupported headers, duplicate county/APN rows, malformed values and embedded permission fields. Remove or map extra vendor columns; do not discard the original source file.
 
-### 2b. Sign up for the APIs
+Limits: 1.8 MB per CSV and 5,000 leads per workspace. Split larger exports. The enclosing request also has a 2 MB limit, so heavily quoted files may require smaller parts. Start with 10–25 reviewed records before a larger batch.
 
-Get one key per row. Free tiers are fine for testing.
+## Evidence needed before real import
 
-| Service | Why | Free tier |
-|---|---|---|
-| Supabase | Database | Yes, generous |
-| Anthropic | Claude API for ranking + message generation | Pay-as-you-go, ~$0.01/deal |
-| RentCast | Property data + comparable sales | 50 free calls/mo |
-| PropertyRadar | CA cash-buyer discovery | 7-day free trial |
-| BatchSkipTracing | Phone/email lookup | Pay-per-lookup ($0.15) |
-| Twilio | Send SMS | Pay-per-message + $1/mo for the number |
-| Resend | Send email | 3,000 free emails/mo |
+A reviewer/admin opens **Readiness → Data source permission** and records the genuine evidence: authorized account/entity, source, allowed use, document/reference, actual review date and any expiration. This is the `data_provenance` gate. A generic 'we are good to go' is not a file-specific source-rights record.
 
-### 2c. Create the database
+Then, in **Import**, supply the CSV, source name, actual source/export date and permission reference. Preview it, review scores/warnings/unknown fields, then choose **Import reviewed rows**. The import is tied to the exact previewed file and source details. An owner/phone/address change clears old contact evidence. Records are deduplicated within the workspace by county and APN.
 
-1. Go to [supabase.com](https://supabase.com), create a new project.
-2. In the Supabase dashboard → SQL Editor → New Query.
-3. Open `supabase/migrations/001_initial_schema.sql` from this repo, paste the whole thing, click Run.
-4. Verify: Table Editor should now show `buyers`, `wholesalers`, `deals`, `outreach`, `discovery_runs`.
+Scoring stays at the original weights and threshold of 8. A high score alone does not mean a record is eligible to contact.
 
-### 2d. Fill in `.env`
+## Evidence needed before the first mail or calling batch
 
-```bash
-cp .env.example .env
-```
+Readiness shows the next blocked gate. A reviewer/admin records authentic references for counsel-reviewed documents, the mail/manual-call policy, data provenance, suppression procedures, title/escrow readiness, this deployed release's verification, and operator launch authorization. A notice-of-default lead also needs the specialist `nod_counsel` gate. Record actual review dates; do not invent names, documents or approvals. A blocked, changed or expired gate can invalidate previously reviewed material.
 
-Open `.env` and paste each key from step 2b. Where to find them:
+For each selected seller in **Seller leads**, open the detail and record:
 
-- **Supabase** → Project Settings → API → copy `URL` and `service_role` key
-- **Anthropic** → console.anthropic.com → API Keys → Create Key
-- **RentCast** → app.rentcast.io → Dashboard → API Keys
-- **PropertyRadar** → app.propertyradar.com → Account → API
-- **Twilio** → console.twilio.com → Account SID, Auth Token, Phone Numbers → buy a number
-- **Resend** → resend.com → API Keys → also verify your sending domain
+- The selected phone number, matching the imported owner contact.
+- DNC status and litigator status from the actual scrub result, with its date and retrievable evidence reference. Both must be clear and no more than 30 days old for release.
+- For calling, `America/Los_Angeles` recipient timezone and evidence supporting it. The property ZIP or phone area code alone is not evidence of where the recipient lives.
+- A complete owner mailing address for mail.
 
----
+The retained pilot policy requires phone-keyed scrub evidence even for mail. A reviewer would need to approve and implement a distinct policy before changing that rule. Suppression applies across channels and remains permanent. Use the suppression form promptly when someone asks not to be contacted.
 
-## 3. Smoke test: score one deal
+## Prepare and use a manual batch
 
-This is the fastest "does it work" check. No SMS, no email, no buyers needed.
+1. In **Mail & calls → Templates**, enter the exact copy or call script approved for this activity, including the reviewed assignment disclosure. Supported placeholders are `{{owner_name}}`, `{{address}}` and `{{zip}}`. Save a draft, then have a reviewer approve that revision with an evidence reference. Saving copy does not approve it.
+2. In **Seller leads**, select the intended recipients. Return to **Mail & calls**, choose the reviewed template and create a draft, up to 500 recipients.
+3. Open the draft, inspect every destination and rendered message, and approve the exact batch. Approval lasts 24 hours. Changing source/contact information, gates or template approval requires a fresh reviewed batch.
+4. Download the mail CSV or call sheet. The download rechecks current eligibility, suppression and approval. Calling release/use is limited to 9am–7pm Pacific, Monday–Saturday, with one attempt per contact per day. A call sheet can be drafted outside those hours.
+5. For mail, manually map the exported recipient/address/copy fields into the mail vendor's order tool. Verify the final print proof and count before purchasing. Sangam does not place or pay for the order. For calls, manually dial the approved number and use the reviewed script. Neither channel is connected to a sender.
+6. Record the actual recipient outcome, actual event time, external receipt/log reference and actual cost. A download is not a touch. If nothing happened, record nothing. Duplicate receipts are rejected or handled idempotently.
 
-```bash
-npm run score-deal -- "229 Angus Ave E, San Bruno, CA 94066" 780000 1255000
-```
+Approval expiry cannot physically recall a downloaded file. Operators must honor its use-before time, check new suppressions, and obtain a fresh export when anything changes. File preparation does not guarantee a vendor will mail within 24 hours; approve at handoff time and use the actual accepted-mailing/order evidence appropriate to the reviewed operating policy.
 
-What this means:
-- Address: the property
-- 780000: wholesaler is asking $780k
-- 1255000: optional, the wholesaler's claimed ARV (we'll check if it's inflated)
+## Qualify, offer and contract
 
-You should see something like:
+Use the seller detail to record actual responses, property condition, timeline, price expectation and mortgage balance. Responses are separate from outbound touches: a mailed letter's reply can count as a conversation without pretending another call occurred.
 
-```
-DEAL: 229 Angus Ave E, San Bruno, CA 94066
-ASKING: $780,000
-ARV (computed): $895,000  [median $/sqft of 5 qualified comps × 1100 sqft]
-REPAIRS (gut @ $80/sqft): $88,000
-MAO: $538,500
-SCORE: 0
-STATUS: dead
-KILL REASON: Asking $780,000 exceeds 85% of computed ARV ...; Wholesaler claimed ARV $1,255,000 is 40% above computed ARV ...
-```
+Enter your ARV, repairs, closing costs, target assignment fee, required margin and at least three distinct sold comparable references. The app calculates MAO from those inputs; it does not obtain or verify comparable sales or appraise the property. Review the inputs before making a human offer.
 
-The deal is now in your `deals` table — open Supabase → Table Editor → `deals` and you'll see the row.
+Record only an offer actually delivered, with its date/reference. After a real purchase agreement is signed, record its price, signed date, closing date, assignability and contract/disclosure references. The contract target is a real signed purchase contract, not a draft. Use evidenced extensions/termination records when the contract changes; revised terms require fresh packet review.
 
-**Calibration check:** the 229 Angus deal should always come back with `STATUS: dead`. If it scores ≥ 30, something is wrong with your API keys or comp data — stop and debug before going further.
+## Match and assign the contract
 
----
+In **Contracts & buyers**, add buyers whose source and contact permission you can document. Record target ZIPs, price range, property types, rehab limit and known activity facts. Unknown activity stays unknown. The matcher considers fit separately from seller motivation and returns up to ten permitted candidates.
 
-## 4. Seed your buyer database
+Choose the buyers and enter the exact reviewed assignment message. Identify the contractual/equitable interest and intended assignment. Review and approve the packet, then download it. Deliver it manually through the permitted route and record the actual delivery/reference; a download does not satisfy the 24-hour buyer-alert task. Record inbound buyer replies and opt-outs even when they arrive after the packet's release period.
 
-The matcher needs buyers to match against. Two ways to get them in:
+After humans execute the assignment, record its signed agreement, actual amount, required disclosure references and any deposit actually received with its evidence. After escrow closes, record the real closing reference, assignment fee and expenses. The app does not sign, hold deposits or collect money.
 
-### 4a. Manual seed (recommended for day 1)
+## Daily review and recovery
 
-Supabase dashboard → Table Editor → `buyers` → Insert row. Add 20-30 buyers you already know about. Required fields per row:
+**Today** shows readiness, actual pilot progress, follow-ups and buyer alerts. Real launch begins with the earliest actual real outreach receipt. The 90-day targets remain 2,000 unique leads touched, 20 offers and one signed purchase contract. Practice records are excluded. At 500 mail pieces/month, mail alone supplies at most 1,500 pieces in 90 days before repeats; plan the remaining unique manual contacts explicitly.
 
-| Field | Example | Notes |
-|---|---|---|
-| `full_name` or `entity_name` | "Acme Holdings LLC" | One or the other |
-| `phone` | "+14155551234" | E.164 format if possible |
-| `email` | "deals@acme.com" | |
-| `primary_region` | "Los Angeles" | City, not state |
-| `min_price` / `max_price` | 300000 / 800000 | Their price band |
-| `property_types` | `{sfr}` | Postgres array |
-| `source` | "manual" | |
-| `source_confidence` | 4 | 1-5 |
+Use **Record an expense** for actual vendor/setup costs with their dates and receipts. Do not enter a cost again if it is already included in a touch receipt or closing record. Cost-per-conversation, offer and contract use these recorded costs; absent activity shows no ratio, not zero. **Rescore existing leads** recalculates stored facts without fetching vendor data.
 
-Where to find buyers to manually add:
-- LA REIA member directory (laareia.com)
-- BiggerPockets → Find Investors → filter California → flippers/investors
-- Top commenters in "LA Real Estate Investors" / "SoCal Flippers" FB groups
+If a form says the workspace changed, refresh and review before retrying. If a save or connection is unconfirmed, refresh and inspect the record first. Never retry a physical mail order or contact because a screen was slow. Use the recorded external receipt to reconcile.
 
-### 4b. Auto-discovery (after PropertyRadar is set up)
-
-```bash
-npm run discovery
-```
-
-This queries PropertyRadar for CA cash buyers who own 2+ properties and purchased in the last year, then upserts them into `buyers`. The first run can take a few minutes and may cost up to $20 in skip-trace lookups (capped). Expect 200-500 new rows.
-
----
-
-## 5. End-to-end on a real deal
-
-Once you have buyers in the DB and one live deal that scored above 30:
-
-```bash
-# 1. Score the new deal
-npm run score-deal -- "1234 Real St, Anaheim, CA 92805" 425000
-# Copy the DEAL ID from the output, e.g. d3f9...
-
-# 2. Match buyers to it
-npm run match -- d3f9...
-# Prints the top 20, also writes them to the `outreach` table as pending
-
-# 3. Preview the messages first (no actual sends)
-DRY_RUN=1 npm run outreach -- d3f9...
-# Open Supabase → outreach table → check the message_text fields by eye
-
-# 4. If the messages look good, send for real
-npm run outreach -- d3f9...
-```
-
-**Important rails the system enforces automatically:**
-- It refuses to send between 9pm and 8am Pacific (TCPA)
-- It will not send the same buyer more than 1 SMS + 1 email per week
-- It will not re-pitch a buyer on the same deal within 7 days
-- Every SMS includes "Reply STOP to opt out" and the KAHLA STUDIO disclosure
-- The SMS body never contains the property address (only beds/baths/sqft) — the address only goes out in the deal sheet after the buyer replies Y
-
----
-
-## 6. Inside Claude Code (alternative to npm scripts)
-
-If you're working inside Claude Code, you can use slash commands instead of `npm run`:
-
-```
-/size-deal "229 Angus Ave E, San Bruno, CA 94066" 780000 1255000
-/run-discovery
-/match-deal <deal_id>
-/send-outreach <deal_id>
-```
-
-Each one invokes the matching subagent (in `.claude/agents/`).
-
----
-
-## 7. The mental model in one minute
-
-```
-wholesaler texts you address ──► /size-deal ──► deals table
-                                                    │
-                              score ≥ 30 ──────────┘
-                                                    │
-                                                    ▼
-                                              /match-deal
-                                                    │
-                                                    ▼
-                                            outreach table (20 rows, pending)
-                                                    │
-                              you eyeball with DRY_RUN ─────► looks good?
-                                                                  │
-                                                                  ▼
-                                                          /send-outreach
-                                                                  │
-                                                                  ▼
-                                                        Twilio + Resend fire
-                                                                  │
-                                                                  ▼
-                                                        buyer replies Y / questions
-                                                                  │
-                                                                  ▼
-                                                  you hand-deliver the deal sheet
-                                                  + connect buyer to wholesaler
-```
-
-You charge the wholesaler $1,500-3,000/month for this. You do not take commission on the actual transaction — you are a software vendor, not a broker. Keep it that way.
-
----
-
-## 8. Common things that break
-
-| Symptom | Cause | Fix |
-|---|---|---|
-| `SUPABASE_URL required` on every command | `.env` not loaded | Check `.env` exists at repo root, run `npm install dotenv` if missing |
-| `RentCast 401` | Bad RentCast key | Re-copy from RentCast dashboard, make sure you're on the right account tier |
-| Score is 100 for everything | RentCast returned `price: 0` | Check that `getProperty` returned a `squareFootage` — if 0, the median × 0 = 0 = trivially beats MAO. Bad address parse usually |
-| Matcher returns 0 buyers | Empty `buyers` table or region mismatch | Seed buyers manually, or run `/run-discovery` |
-| `Outside TCPA send window` | It's after 9pm PT | Wait until morning, or use `DRY_RUN=1` to preview |
-| Twilio "phone number not verified" | On free tier Twilio only sends to verified numbers | Verify recipient numbers in Twilio console, or upgrade |
-
----
-
-## 9. What to do this week
-
-1. Day 1: Run setup (steps 1-2 above). Confirm `.env` is filled. Run the 229 Angus smoke test and verify it dies.
-2. Day 2: Seed 20-30 buyers manually (step 4a).
-3. Day 3: Run `npm run discovery` against PropertyRadar. Aim for 500 buyers total in the DB.
-4. Day 4: Find one real live deal from a wholesaler, run the full pipeline (step 5) with `DRY_RUN=1`. Show the wholesaler the matched buyer count.
-5. Day 5: Pitch your first wholesaler with the $1,500/mo flat-rate, first-30-days-free offer (see CLAUDE.md "FIRST CLIENT PITCH").
-
-If the Angus wholesaler bites, he's client #1. If he ghosts, send 5 cold DMs to other LA/OC/IE wholesalers via BiggerPockets and FB.
+See [the changes ledger](SPEC-CHANGES.md) for deviations from the original spec and [deployment/recovery](DEPLOY.md) for administrator steps. No part of this guide supplies professional approval or an authorization to contact a specific person.

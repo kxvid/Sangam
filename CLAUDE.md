@@ -1,3 +1,5 @@
+> Historical Sangam concept document. The current authorized release is the manual Acquisition pilot described in README.md, docs/DEPLOY.md and docs/SPEC-CHANGES.md. Old instructions to send, scrape, purchase services or enable live providers are superseded. Legislative, licensing, pricing and billing statements below are historical assumptions, not verified release facts.
+
 # KAHLA STUDIO — Cash Buyer Network
 
 A Claude Code project that finds, scores, and matches cash real estate buyers to wholesale deals. Sold as a $1,500-3,000/mo subscription to wholesalers in CA. Built by Kov as part of KAHLA STUDIO.

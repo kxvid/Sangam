@@ -3,9 +3,11 @@ import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "KAHLA — Cash Buyer Network",
-  description: "Scored cash buyer database + deal matchmaking for CA wholesalers.",
+  title: "Sangam — Acquisition",
+  description: "A private workspace for seller acquisition and manual deal disposition.",
 };
+
+export const dynamic = 'force-dynamic';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -14,10 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         variables: {
           colorPrimary: "#10b981",
           colorBackground: "#0e1014",
-          colorInputBackground: "#161a21",
-          colorInputText: "#e7e9ef",
-          colorText: "#e7e9ef",
-          colorTextSecondary: "#9ba2b1",
+          colorForeground: "#e7e9ef",
           borderRadius: "0.75rem",
         },
       }}
