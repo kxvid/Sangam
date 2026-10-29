@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
-import { Layers3 } from "lucide-react";
+import { GitBranch, Layers3 } from "lucide-react";
 import clsx from "clsx";
 
 const items = [
   { href: "/acquisition", label: "Acquisition", icon: Layers3 },
-
+  { href: "/automation", label: "Sourcing & matching", icon: GitBranch },
 ];
 
 export function Nav() {

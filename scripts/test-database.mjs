@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 
 if(process.env.PG_TEST_URL) {
   execFileSync(process.execPath,['--import','tsx','--test','tests/database.test.ts'],{stdio:'inherit'});
+  execFileSync(process.execPath,['--import','tsx','--test','tests/automation-database.test.ts'],{stdio:'inherit'});
 } else {
   // An isolated socket-only cluster; never uses application SUPABASE_* settings.
   const directory=mkdtempSync('/tmp/sangam-test-');
@@ -19,6 +20,7 @@ if(process.env.PG_TEST_URL) {
     tool('createdb',[...connection,'sangam_test']);
     const testUrl='postgresql://postgres@localhost:55439/sangam_test?host='+encodeURIComponent(directory);
     execFileSync(process.execPath,['--import','tsx','--test','tests/database.test.ts'],{stdio:'inherit',env:{...process.env,PG_TEST_URL:testUrl}});
+    execFileSync(process.execPath,['--import','tsx','--test','tests/automation-database.test.ts'],{stdio:'inherit',env:{...process.env,PG_TEST_URL:testUrl}});
     tool('pg_dump',[...connection,'--file',join(directory,'backup.sql'),'sangam_test']);
     tool('createdb',[...connection,'sangam_test_restore']);
     tool('psql',[...connection,'-v','ON_ERROR_STOP=1','-f',join(directory,'backup.sql'),'sangam_test_restore']);
