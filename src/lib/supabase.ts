@@ -1,19 +1,16 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-let _client: SupabaseClient | null = null;
+let client: SupabaseClient | undefined;
 
-function build(): SupabaseClient {
+/** Server-only capability. No unscoped table access is granted to this role. */
+export function serverDatabase(): SupabaseClient {
+  if (typeof window !== 'undefined') throw new Error('Server database unavailable in a browser');
   const url = process.env.SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceKey) {
-    throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY required");
-  }
-  return createClient(url, serviceKey, { auth: { persistSession: false } });
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error('Database configuration is incomplete');
+  client ??= createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { fetch: (input, init) => fetch(input, { ...init, cache: 'no-store' }) },
+  });
+  return client;
 }
-
-export const supabase = new Proxy({} as SupabaseClient, {
-  get(_t, prop) {
-    if (!_client) _client = build();
-    return Reflect.get(_client, prop, _client);
-  },
-});

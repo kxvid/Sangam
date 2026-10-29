@@ -13,3 +13,14 @@ coverage/
 .next/
 next-env.d.ts
 tsconfig.tsbuildinfo
+
+# Private operational data and disposable tooling
+supabase/.temp/
+data/
+exports/
+backups/
+*.sqlite*
+playwright-report/
+test-results/
+.env*
+!.env.example
