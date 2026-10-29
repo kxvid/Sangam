@@ -78,3 +78,66 @@ The autonomous part is validation, scoring, explained matching, refreshing autho
 - No new paid service or subscription was purchased for these features. Free source access does not eliminate hosting, storage, authentication, mail, phone, data-licensing or human operating costs. The original budget remains a planning assumption; modeled profit is not collected cash and excludes tax and any unallocated overhead.
 
 See [Free public-data sources](FREE-DATA-SOURCES.md) for verified endpoints, source dates, access failures and integration limits. Paid public SaaS billing, entitlements and self-service customer onboarding are not represented as complete by this build.
+
+## Wholesaler launch research and supporting tools — October 29, 2026
+
+User clarification: operate as the wholesaler; research the best path in Browser and create a cited gameplan. These changes are local supporting tools and recommendations. They do not activate new data collection or outbound channels in production.
+
+After reviewing the $119/month PropertyRadar option, the user selected **PropStream exports for now**. That is the active source decision; PropertyRadar remains deferred and no additional data subscription was purchased.
+
+The user then clarified that PropStream signup is still needed. Trial signup was prepared without submission. The initial trial sample is 10–25 records within the advertised 50-property allowance; a 100–250-record batch depends on verified account entitlement. No paid enrollment or account creation is claimed.
+
+| Original or earlier assumption | Change / current decision | Why |
+|---|---|---|
+| SaaS monetization among go-live prerequisites | Prioritize Kahla Labs' own wholesaling operation; defer customer subscription/onboarding work | A closed assignment is the requested outcome. Product billing is not required to operate the private desk. |
+| PropStream API if available | Retain authorized exports for the first batch; recommend PropertyRadar Solo as the next actual API source | Current paid Solo API access is documented at $119/month; a general PropStream developer feed was not established. No subscription was purchased. |
+| No usable free IE distress feed established | A working official San Bernardino weekly tax-default CSV was found; add an offline research decoder | New primary evidence improves on the earlier search. Tax bills need exact parcel joins, status review and missing owner/address enrichment before becoming seller leads. |
+| Generic daily scraping of public pages | Provider-specific licensed API/delivered-file paths; county recurring collection remains held pending scope/access checks | Preserves dates, field meanings and repeatability; avoids pretending a public search page is an unrestricted API. |
+| Unattended data retrieval could be covered by a rough budget | A PropertyRadar preview-only client hardcodes Purchase=0, with no acquisition method | Cost/count previews do not reserve credits; the provider exposes no atomic maximum-charge parameter for a subsequent purchase. |
+| Local synthetic restore test as available evidence | Separate tooling for verifying an operator-supplied consistent backup in an isolated local cluster | Browser confirmed the real Supabase Free plan has no hosted project backups. Actual production recovery evidence is still outstanding. |
+| $52 county file price in an older indexed form | Use current Riverside published $66/file; two proposed files imply $132 per delivery before any additional quote | Prefer the current county form over obsolete pricing. No county order or agreement was submitted. |
+| Original AB 1850 narrative | Record the official page's observed May 14 held-under-submission action; no prediction of reintroduction | Browser verification supports an exact dated status, not a broader legal conclusion. Existing professional review remains the operating evidence. |
+| One contract automatically triggers doubling volume | Preserve the one-contract target; also inspect buyer fit, closing feasibility and actual net cash before scaling | A signed purchase contract is a learning milestone and obligation, not collected profit. |
+| 500 monthly mail pieces could meet 2,000 unique leads | Add an explicit manual-contact capacity plan with deduplication and follow-up allocation | Repeated pieces do not create additional unique leads; targets remain measured from actual launch. |
+
+The [launch plan](WHOLESALER-LAUNCH-PLAN.md) records sources, tradeoffs, inputs and acceptance evidence. The original weights/threshold, manual channels, suppression, real-evidence requirements and human deal execution remain unchanged. No real lead, professional approval, touch, offer, contract or collected fee was created by the research tools.
+
+
+## Zero-subscription source decision — October 29, 2026
+
+This supersedes the earlier PropStream selection and trial plan. The operator rejected its expense and requested free alternatives. PropStream's signup remains unfinished. The operator approved PropWire free registration and completed the password step; Browser then verified **Basic Active**, no saved payment methods, a $0 wallet and **10 of 10 monthly skip traces remaining**. The page labels the next cycle November 29; no paid plan, wallet top-up or extra trace was selected.
+
+| Earlier plan | Change | Why |
+|---|---|---|
+| Required PropStream subscription or its temporary trial | PropWire Basic native downloads become the first sample route | Removes the recurring data subscription; the free account was actually verified instead of assuming an existing PropStream account. |
+| Treat free sources as enrichment only | Add PropWire property exports and Riverside's July 1 power-to-sell inventory to the researched source plan | New primary evidence offers useful candidates, with actual county snapshot dates and missing owner/contact fields kept explicit. |
+| Assume a fixed export cap from marketing | Verify the actual native download and account allowance; do not adopt conflicting older unlimited/10k claims | Current terms and marketing differ; no unverified account entitlement is promised. |
+| PropStream-only import wording | Use the existing source-neutral CSV backend with the verified native PropWire mapping | The actual 23-row/74-column export passed the parser and live preview, then persisted in Acquisition. No new database/provider integration was needed. |
+| Skip trace every qualifying lead using paid credits | Use only the verified included allowance for an initial small experiment | Basic's free property data does not provide unlimited free phone leads; no paid overage is authorized. |
+| Free list implies outreach-ready | Explicitly document the retained phone-keyed screening requirement for both mail and calls | Import can work without a phone; release currently cannot. The data-cost pivot does not silently change reviewed channel policy. |
+| Immediate 500-piece scale | Import the actual 23-record first sample, replacing the proposed 25–50 candidates | Avoids expanding the farm merely to reach a round number. All score 7 and remain held; the original threshold and 90-day targets remain. |
+| Search filter labels could imply supported score facts | Keep all blank `Owner Occupied` values as unknown absentee status | The absentee search label is not row-level evidence. Vacancy, estimated equity and completed ownership duration total 7; no points were invented to cross 8. |
+| A single owner or rounded ownership duration | Preserve all named co-owners and use completed years, `floor(months/12)` | Eight rows contain co-owners; rounding tenure up could incorrectly add a point at a scoring boundary. Four bank-related owner-type tags remain review context. |
+
+See [first free-source batch](FREE-LEAD-FIRST-BATCH.md). No sourced candidate is represented as a willing seller, signed contract, permitted contact or collected fee. Mail and calling remain manual.
+
+First free export evidence: the 92503 search returned 23 candidates and native export generation completed with READY status. After browser download permission was declined, the operator downloaded the file manually. The private original has 74 columns; all 23 rows have owner/mailing fields and no duplicate county/APN pairs. No phone/email values were provided. The exact header mapping and source limitations are documented in [the first-batch guide](FREE-LEAD-FIRST-BATCH.md); no personal record content is published here. The overall monthly download cap, current listing status and underlying record observation/update dates remain unverified.
+
+The factual `data_provenance` review was recorded with Codex explicitly identified as reviewer acting under operator instructions, supported by the native export, accepted terms, internal-use scope and limitations. The live preview showed 23 new records, 0 updates and 0 scoring 8+. The real import completed and a refresh verified 23 persisted seller research records, all scoring 7, with 0 mail-ready and 0 call-ready. No other readiness gates were approved; counsel evidence is next. There are 0 touches, 0 offers and 0 contracts, and the 90-day clock has not started. No trace, purchase, outbound contact or runtime code change was required for this import.
+
+
+## First verified candidates and free contact enrichment — October 29, 2026
+
+This later update follows the historical initial import above. Eight per-property evidence reviews were saved in live Sangam, increasing eight research scores from 7 to 9 under the original rubric. Eight included PropWire traces then completed for $0; the account showed two credits remaining. Mail and calling remain manual, no outreach batch was released and no professional gate was approved.
+
+| Earlier state or assumption | Change | Why |
+|---|---|---|
+| Blank exported Owner Occupied field left all 23 records at score 7 | Add explicit absentee classifications from eight matching property-detail pages; eight score 9, 15 remain 7 | Uses actual additional evidence without inferring from a filter or lowering the threshold. Vendor facts do not establish title or intent. |
+| Ten free traces displayed on the account | Complete the required phone verification and obtain explicit trace-terms approval before eight included traces | The execution screen imposed a prerequisite not visible in the allowance summary. No paid quote or overage was accepted. |
+| Trace every qualifying lead at a paid per-record rate | Use eight free credits on reviewed candidates, leaving two unused | Keeps data spend at $0 and preserves credits for later verified candidates instead of forcing ten records. |
+| Skip tracing might be mistaken for screening | Preserve 22 distinct phone candidates, five vendor DNC flags and unknown litigator/timezone facts; prepare seven unflagged candidates for screening only | Missing DNC labeling is not a clear result. The lead whose two numbers are DNC-marked has no selected calling number; this is not a fabricated permanent owner opt-out. |
+| Prepare the first outreach batch immediately | Prepare a private held evidence packet and unapproved mail/call drafts until existing eligibility checks pass | Retains authentic gates, current screening and exact-content approval. No send, launch or business milestone is inferred from preparation. |
+
+The trace date is not a registry-check timestamp, and phone-owner identity is not established by a returned number. All emails remain private and unused. Public documentation contains aggregate results only; the [first-batch guide](FREE-LEAD-FIRST-BATCH.md#later-verification-and-free-traces--october-29-2026) explains current holds. No data subscription, wallet funding, paid trace or automatic sender was added.
+
+Live preparation was verified after refresh: eight existing records updated without adding duplicates; seven unverified selected phone candidates retained, with the DNC-only record left without a selected phone; mail and calling copy saved as unapproved draft v1. Eight private mail proofs and separate held review manifests make the proposed first batch concrete without bypassing release gates. No application code or outbound setting changed in this continuation.

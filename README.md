@@ -6,6 +6,7 @@ A private workspace for Kahla Labs LLC's Inland Empire pilot: import authorized 
 
 ## Start here
 
+- [Wholesaler launch plan](docs/WHOLESALER-LAUNCH-PLAN.md): researched source choices, first real batch, buyer demand, costs and remaining operator inputs.
 - [Operator guide](docs/GETTING_STARTED.md): test the workflow, import real leads and prepare the first batch.
 - [Operations guide](docs/OPERATIONS-GUIDE.md): work queue, profit scenarios, buyer follow-ups, readiness and free data.
 - [Free-data source evidence](docs/FREE-DATA-SOURCES.md): verified availability, provenance, limits and held sources.
