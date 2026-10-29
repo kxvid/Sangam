@@ -78,3 +78,26 @@ The autonomous part is validation, scoring, explained matching, refreshing autho
 - No new paid service or subscription was purchased for these features. Free source access does not eliminate hosting, storage, authentication, mail, phone, data-licensing or human operating costs. The original budget remains a planning assumption; modeled profit is not collected cash and excludes tax and any unallocated overhead.
 
 See [Free public-data sources](FREE-DATA-SOURCES.md) for verified endpoints, source dates, access failures and integration limits. Paid public SaaS billing, entitlements and self-service customer onboarding are not represented as complete by this build.
+
+## Wholesaler launch research and supporting tools — October 29, 2026
+
+User clarification: operate as the wholesaler; research the best path in Browser and create a cited gameplan. These changes are local supporting tools and recommendations. They do not activate new data collection or outbound channels in production.
+
+After reviewing the $119/month PropertyRadar option, the user selected **PropStream exports for now**. That is the active source decision; PropertyRadar remains deferred and no additional data subscription was purchased.
+
+The user then clarified that PropStream signup is still needed. Trial signup was prepared without submission. The initial trial sample is 10–25 records within the advertised 50-property allowance; a 100–250-record batch depends on verified account entitlement. No paid enrollment or account creation is claimed.
+
+| Original or earlier assumption | Change / current decision | Why |
+|---|---|---|
+| SaaS monetization among go-live prerequisites | Prioritize Kahla Labs' own wholesaling operation; defer customer subscription/onboarding work | A closed assignment is the requested outcome. Product billing is not required to operate the private desk. |
+| PropStream API if available | Retain authorized exports for the first batch; recommend PropertyRadar Solo as the next actual API source | Current paid Solo API access is documented at $119/month; a general PropStream developer feed was not established. No subscription was purchased. |
+| No usable free IE distress feed established | A working official San Bernardino weekly tax-default CSV was found; add an offline research decoder | New primary evidence improves on the earlier search. Tax bills need exact parcel joins, status review and missing owner/address enrichment before becoming seller leads. |
+| Generic daily scraping of public pages | Provider-specific licensed API/delivered-file paths; county recurring collection remains held pending scope/access checks | Preserves dates, field meanings and repeatability; avoids pretending a public search page is an unrestricted API. |
+| Unattended data retrieval could be covered by a rough budget | A PropertyRadar preview-only client hardcodes Purchase=0, with no acquisition method | Cost/count previews do not reserve credits; the provider exposes no atomic maximum-charge parameter for a subsequent purchase. |
+| Local synthetic restore test as available evidence | Separate tooling for verifying an operator-supplied consistent backup in an isolated local cluster | Browser confirmed the real Supabase Free plan has no hosted project backups. Actual production recovery evidence is still outstanding. |
+| $52 county file price in an older indexed form | Use current Riverside published $66/file; two proposed files imply $132 per delivery before any additional quote | Prefer the current county form over obsolete pricing. No county order or agreement was submitted. |
+| Original AB 1850 narrative | Record the official page's observed May 14 held-under-submission action; no prediction of reintroduction | Browser verification supports an exact dated status, not a broader legal conclusion. Existing professional review remains the operating evidence. |
+| One contract automatically triggers doubling volume | Preserve the one-contract target; also inspect buyer fit, closing feasibility and actual net cash before scaling | A signed purchase contract is a learning milestone and obligation, not collected profit. |
+| 500 monthly mail pieces could meet 2,000 unique leads | Add an explicit manual-contact capacity plan with deduplication and follow-up allocation | Repeated pieces do not create additional unique leads; targets remain measured from actual launch. |
+
+The [launch plan](WHOLESALER-LAUNCH-PLAN.md) records sources, tradeoffs, inputs and acceptance evidence. The original weights/threshold, manual channels, suppression, real-evidence requirements and human deal execution remain unchanged. No real lead, professional approval, touch, offer, contract or collected fee was created by the research tools.

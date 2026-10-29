@@ -2,6 +2,8 @@
 
 Research verified 2026-10-29. This is an implementation recommendation, not a record of a live provider connection or import. Mail and calling remain manual.
 
+**Later research on October 29:** a current official San Bernardino tax-default CSV was found and its ordinary download worked. This updates the earlier finding below that no usable free distress feed had been established. It is bill/account evidence without owner names or addresses; the published JSON query endpoint failed, and recurring commercial-use scope remains unresolved. It is not connected to the live collector. See the [wholesaler launch plan](WHOLESALER-LAUNCH-PLAN.md) and [offline county research decoder](COUNTY-RESEARCH-IMPORT.md) for the evidence and next steps.
+
 ## Implemented boundary
 
 The `src/public-data` adapter foundation supplies the catalog, one explicitly requested Census location lookup, and an offline FEMA county-response decoder. Census lookup responses are suggestions (`unique`, `ambiguous`, or `no_match`); they never overwrite a lead or alter scoring/contact eligibility. Automatic public-source collection is not enabled. FEMA loading returns a hold without a request; Riverside has no parser because its actual JSON schema is still unverified.
