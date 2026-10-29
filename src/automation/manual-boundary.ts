@@ -17,6 +17,11 @@ export function sourceChecks(state:AcquisitionState,command:Command,sources:Sour
     const leadId=state.contracts.find(item=>item.id===contractId)?.leadId;
     if(leadId)leadIds=[leadId];
   }
+  return leadSourceChecks(state,leadIds,sources,now);
+}
+
+/** Current grant checks also protect operator-requested external enrichment. */
+export function leadSourceChecks(state:AcquisitionState,leadIds:string[],sources:Source[],now:string) {
   const leads=leadIds.map(id=>state.leads.find(item=>item.id===id)).filter((lead):lead is Lead=>!!lead);
   const checks=new Map<string,{id:string;revision:number;permissionReference:string}>();
   for(const lead of leads) {

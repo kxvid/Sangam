@@ -20,7 +20,7 @@ try {
     await delay(100);
   }
   assert.ok(ready,'Production server must fail closed with unconfigured authentication.');
-  for(const path of ['/','/acquisition','/automation','/api/automation?workspaceId=11111111-1111-4111-8111-111111111111','/api/workspaces','/api/acquisition?workspaceId=11111111-1111-4111-8111-111111111111']) {
+  for(const path of ['/','/acquisition','/automation','/operations','/api/public-data','/api/automation?workspaceId=11111111-1111-4111-8111-111111111111','/api/workspaces','/api/acquisition?workspaceId=11111111-1111-4111-8111-111111111111']) {
     const res=await fetch(origin+path); assert.equal(res.status,503,path);
     assert.match(res.headers.get('cache-control')??'',/no-store/);
     assert.match(await res.text(),/Sign-in is not configured/);

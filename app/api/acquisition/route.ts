@@ -7,6 +7,7 @@ import { runEvaluations } from '@/src/automation/service';
 import { SOURCE_BOUND_ACTIONS,sourceChecks } from '@/src/automation/manual-boundary';
 import { loadAutomation,commitAcquisition } from '@/src/automation/store';
 import type { Command } from '@/src/acquisition/types';
+import {loadSourceHolds} from '@/src/automation/source-holds';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -22,7 +23,9 @@ export async function GET(request: Request) {
     const id = workspaceId(new URL(request.url).searchParams.get('workspaceId'));
     const access = await requireWorkspace(id);
     const current = await loadAcquisition(id, access.actorId);
-    return json({...current, summary: summarize(current.state, new Date().toISOString()), workspace: access.workspace, role: access.role},200,request);
+    const now = new Date().toISOString();
+    const sourceHolds=await loadSourceHolds(id,access.actorId,current.state);
+    return json({...current, asOf: now, sourceHolds, summary: summarize(current.state, now), workspace: access.workspace, role: access.role},200,request);
   } catch (error) { return failure(error); }
 }
 
@@ -40,7 +43,8 @@ export async function POST(request: Request) {
     // checked at the final transactional boundary, with a metadata-only audit.
     // Construct the bounded response before committing, so an oversize result
     // cannot save a transition the operator never receives.
-    const response = json({state: transition.state, version: current.version + 1, summary: summarize(transition.state, now), result: transition.result, workspace: access.workspace, role: access.role},200,request);
+    const sourceHolds=await loadSourceHolds(body.workspaceId,access.actorId,transition.state);
+    const response = json({state: transition.state, version: current.version + 1, asOf: now, sourceHolds, summary: summarize(transition.state, now), result: transition.result, workspace: access.workspace, role: access.role},200,request);
     if(boundSources.length) await commitAcquisition(body.workspaceId,access.actorId,current.version,transition.state,{action},boundSources);
     else await saveAcquisition(body.workspaceId, access.actorId, current.version, transition.state, {action});
     if(['save_buyer','record_contract','extend_contract','cancel_contract','record_assignment','record_close','underwrite','suppress','record_buyer_receipt'].includes(action)) {

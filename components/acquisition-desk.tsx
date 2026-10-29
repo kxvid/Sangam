@@ -57,9 +57,14 @@ export function AcquisitionDesk() {
   const [receiptBatchId, setReceiptBatchId] = useState("");
   const [receiptPacketId, setReceiptPacketId] = useState("");
   const workspaceRef = useRef(workspaceId);
+  const initialTarget = useRef<{tab: string; leadId: string; workspaceId: string} | null>(null);
   workspaceRef.current = workspaceId;
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    initialTarget.current = { tab: params.get('tab') ?? '', leadId: params.get('leadId') ?? '', workspaceId: params.get('workspaceId') ?? '' };
+    const requestedTab = TABS.find(item => item.id === initialTarget.current?.tab);
+    if (requestedTab) setTab(requestedTab.id);
     const controller = new AbortController();
     (async () => {
       try {
@@ -70,7 +75,7 @@ export function AcquisitionDesk() {
         setWorkspaces(list);
         let preferred = "";
         try { preferred = localStorage.getItem("sangam.workspace") ?? ""; } catch { /* Storage is optional. */ }
-        setWorkspaceId(list.find(item => item.id === preferred)?.id ?? list[0]?.id ?? "");
+        setWorkspaceId(list.find(item => item.id === initialTarget.current?.workspaceId)?.id ?? list.find(item => item.id === preferred)?.id ?? list[0]?.id ?? "");
         if (!list.length) setBusy(false);
       } catch (cause) { if (!controller.signal.aborted) { setError(cause instanceof Error ? cause.message : "Could not load workspaces."); setBusy(false); } }
     })();
@@ -84,7 +89,14 @@ export function AcquisitionDesk() {
       const response = await fetch(`/api/acquisition?workspaceId=${encodeURIComponent(id)}`, { cache: "no-store", signal });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Could not load the acquisition desk.");
-      if (workspaceRef.current === id) setPayload(data as Payload);
+      if (workspaceRef.current === id) {
+        setPayload(data as Payload);
+        const target = initialTarget.current;
+        if (target && (!target.workspaceId || target.workspaceId === id)) {
+          if (data.state.leads.some((lead: Lead) => lead.id === target.leadId)) setFocusedLeadId(target.leadId);
+          initialTarget.current = null;
+        }
+      }
     } catch (cause) { if (!signal?.aborted && workspaceRef.current === id) setError(cause instanceof Error ? cause.message : "Could not load the desk."); }
     finally { if (!signal?.aborted && workspaceRef.current === id) setBusy(false); }
   }, []);

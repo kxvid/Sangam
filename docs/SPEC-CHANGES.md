@@ -55,3 +55,26 @@ User authorization: build sourcing and matching into the live app, keep mail/cal
 | Production setup only | Verified-domain login, isolated practice workspace, protected previews and production-only scheduler secret | Separates real operation from testing and protects job endpoints. |
 
 No automated messages/calls, actual business milestones, legal approvals, source licenses, paid data services, billing, or subscription entitlements are created by this release. Hosting/database processing may consume existing plan allowances; no new paid plan is purchased. Existing production backup/recovery and real evidence prerequisites remain.
+
+## Operating features and free public data — 2026-10-29
+
+User authorization: continue development autonomously, add free data sources and five useful features for operating the business. This expands the earlier PropStream-only source preference; mail and calling remain manual. The table records this build's scope. Deployment and live verification are separate release evidence, not implied by an entry here.
+
+| Original or earlier implementation | Change | Why |
+|---|---|---|
+| Vendor list exports, with later API access contemplated | Public-source catalog and an explicit single-property Census address lookup; FEMA county context and Riverside city permits show clear holds | Adds a verified free lookup without claiming context data is a fresh motivated-seller list. Census receives only the address after confirmation. Current FEMA terms remain unverified and the Riverside feed returned 403. |
+| One MAO calculation from entered underwriting | Saved base/downside/upside profit scenarios with rehab contingency, buyer ceiling, seller MAO, assignment spread, operating costs and projected net | Shows uncertainty and costs that a gross assignment fee hides. Missing inputs remain unknown; scenarios neither change actual offers nor count as income. |
+| Separate seller and buyer follow-up lists | A prioritized daily work queue with contract deadlines, buyer replies, seller next steps and blocked prerequisites | Makes the next human action easier to find. Viewing or clearing preparation work does not send outreach or mark a deal complete. |
+| Buyer matches, packet preparation and delivery receipts | Contract-specific buyer follow-up plans, conversation/offer history and offer withdrawal tracking | Distinguishes intended follow-up from actual buyer responses and executed assignments. Planned tasks do not create contact receipts, deposits or revenue. |
+| Weekly/monthly KPI review plus gate checklist | Private-pilot readiness view with the current real funnel, contract risks, recorded net cash and existing 90-day launch metrics | Separates technical/operating readiness from business results, and estimates from received money. The launch clock still requires an evidenced real touch. |
+
+The autonomous part is validation, scoring, explained matching, refreshing authorized records and preparing the next action. Human work still includes acquiring authorized PropStream exports, reviewing source rights and batches, mailing, calling, negotiation, signatures and closing. These features do not promise a profitable deal or provide unattended end-to-end selling.
+
+### Source and budget assumptions changed
+
+- The Census Geocoder is separate from the Census Data API. Current Data API guidance requires a key for **all** ACS queries, so the old keyless 500-query assumption is not used. No key was registered.
+- No additional functioning free Inland Empire foreclosure, delinquency, probate or code-violation feed with verified reuse rights was established. The public-data catalog labels availability and limits explicitly. The existing authorized PropStream workflow remains the source of operational seller leads.
+- Address lookups require a confirmed property request, current applicable source permission and a durable reservation: at most 20 attempts per workspace in a rolling 24 hours and one attempt per property per minute. Failed attempts count. Results do not silently replace addresses or change motivation, consent or contact clearance.
+- No new paid service or subscription was purchased for these features. Free source access does not eliminate hosting, storage, authentication, mail, phone, data-licensing or human operating costs. The original budget remains a planning assumption; modeled profit is not collected cash and excludes tax and any unallocated overhead.
+
+See [Free public-data sources](FREE-DATA-SOURCES.md) for verified endpoints, source dates, access failures and integration limits. Paid public SaaS billing, entitlements and self-service customer onboarding are not represented as complete by this build.
