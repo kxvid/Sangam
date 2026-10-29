@@ -1,3 +1,4 @@
+import type { BuyerActivity, BuyerActivityInput, ProfitInputs, ProfitScenario, ScenarioName } from '../operations/types';
 export type Role = 'operator' | 'reviewer' | 'admin';
 export type Context = { actorId: string; role: Role; now: string };
 export type Channel = 'mail' | 'call';
@@ -25,13 +26,15 @@ export type Assignment = { id: string; contractId: string; buyerId: string; sign
 export type Closing = { id: string; contractId: string; closedAt: string; assignmentFee: number; expenses: number; reference: string; synthetic: boolean };
 export type Expense = { id: string; category: string; amount: number; occurredAt: string; reference: string; synthetic: boolean; recordedAt: string };
 export type AuditEntry = { id: string; action: string; at: string; actorId: string; detail: string };
-export type AcquisitionState = { schemaVersion: 1; leads: Lead[]; gates: Gate[]; suppressions: Suppression[]; templates: Template[]; batches: Batch[]; receipts: Receipt[]; responses: SellerResponse[]; offers: Offer[]; contracts: Contract[]; buyers: Buyer[]; packets: Packet[]; buyerReceipts: BuyerReceipt[]; assignments: Assignment[]; closings: Closing[]; expenses: Expense[]; audit: AuditEntry[] };
+export type AcquisitionState = { schemaVersion: 1; leads: Lead[]; gates: Gate[]; suppressions: Suppression[]; templates: Template[]; batches: Batch[]; receipts: Receipt[]; responses: SellerResponse[]; offers: Offer[]; contracts: Contract[]; buyers: Buyer[]; packets: Packet[]; buyerReceipts: BuyerReceipt[]; assignments: Assignment[]; closings: Closing[]; expenses: Expense[]; audit: AuditEntry[]; profitScenarios?: ProfitScenario[]; buyerActivities?: BuyerActivity[] };
 export type ImportInput = { csv: string; source: string; sourceDate: string; permissionReference: string; synthetic?: boolean };
 export type ImportPreview = { previewHash: string; count: number; newCount: number; updatedCount: number; eligibleScoreCount: number; synthetic: boolean; rows: Array<{ county: string; apn: string; ownerName: string; address: string; score: number; unknownSignals: string[]; warnings: string[] }> };
 export type Download = { filename: string; mimeType: string; content: string };
 export type Summary = { launchedAt: string | null; day: number | null; daysRemaining: number | null; targets: { leads: number; offers: number; contracts: number }; progress: { leads: number; offers: number; contracts: number; conversations: number; appointments: number; assignmentFees: number; spend: number }; totalLeads: number; realLeads: number; syntheticLeads: number; scoreQualified: number; mailReady: number; callReady: number; nextBlockedGate: GateName | null; followUps: Array<{ leadId: string; ownerName: string; dueAt: string }>; buyerAlertsDue: Array<{ contractId: string; dueAt: string; delivered: number; required: number }>; outbound: 'disabled'; costPer: { conversation: number | null; offer: number | null; contract: number | null }; readiness: { allGeneralGatesApproved: boolean; approvedTemplates: number }; };
 export type Command =
  | { type: 'rescore' }
+ | { type: 'save_profit_scenario'; leadId: string; name: ScenarioName; inputs: ProfitInputs; assumptions: string }
+ | ({ type: 'record_buyer_activity' } & BuyerActivityInput)
  | ({ type: 'record_expense' } & Omit<Expense, 'id' | 'recordedAt'>)
  | ({ type: 'preview_import' } & ImportInput)
  | ({ type: 'import_leads'; previewHash: string } & ImportInput)

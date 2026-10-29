@@ -67,9 +67,16 @@ test('migration isolates workspaces, denies direct writes and commits state and 
     assert.equal((await db.query('select * from public.acquisition_audit')).rowCount,2);
     await assert.rejects(db.query("update public.acquisition_states set state='{}'"),/permission denied/);
     await db.query('reset role');
+    await db.query('set role service_role');
+    const extended={schemaVersion:1,leads:[],profitScenarios:[{id:'fictional-scenario',name:'base',inputs:{arv:null},assumptions:'Storage roundtrip fixture only'}],buyerActivities:[{id:'fictional-plan',kind:'follow_up_planned',occurredAt:null,dueAt:'2026-11-01T18:00:00Z',synthetic:true}]};
+    await db.query('select public.acquisition_save($1,$2,$3,$4::jsonb,$5::jsonb)',[a,'user_a',2,JSON.stringify(extended),JSON.stringify({action:'save_profit_scenario'})]);
+    const roundtrip=(await db.query("select public.acquisition_load($1,'user_a') as loaded",[a])).rows[0].loaded;
+    assert.equal(roundtrip.version,3);
+    assert.deepEqual(roundtrip.state,extended,'Optional operations records survive the existing atomic storage boundary');
+    await db.query('reset role');
     await db.query("update public.workspace_members set active=false where user_id='user_a'");
     await db.query('set role service_role');
-    await assert.rejects(save(2), /workspace access denied/);
+    await assert.rejects(save(3), /workspace access denied/);
     await db.query('reset role');
     await db.query('set role authenticated');
     await db.query("select set_config('request.jwt.claims', $1, false)",[JSON.stringify({sub:'user_a'})]);

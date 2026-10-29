@@ -1,13 +1,16 @@
+import { eligibility, FARM_ZIPS, GENERAL_GATES, gateGood, localParts, suppressed, callHours } from './policy';
+export { eligibility, FARM_ZIPS, GENERAL_GATES } from './policy';
 import { createHash, randomUUID } from 'node:crypto';
 import { z } from 'zod';
+import { profitScenarioCommandSchema, buyerActivityCommandSchema } from '../operations/schemas';
+import { buildBuyerPipeline, buyerFollowUpBlockers } from '../operations/buyers';
+import type { BuyerActivity } from '../operations/types';
 import { csvDownload, parseCsv } from './csv';
 import type { AcquisitionState, Batch, BatchItem, Buyer, BuyerMatch, Channel, Command, Context, Contract, Download, GateName, ImportInput, ImportPreview, Lead, Packet, Signals, Summary } from './types';
 
 export class DomainError extends Error {
   constructor(message: string, public readonly status = 400) { super(message); this.name = 'DomainError'; }
 }
-export const FARM_ZIPS = ['92501', '92503', '92505', '92507', '92401', '92404', '92408', '92410', '92551', '92553', '92555', '92335', '92336', '91761', '91762', '92376', '92324'];
-export const GENERAL_GATES: GateName[] = ['counsel', 'channel_policy', 'data_provenance', 'suppression_ops', 'title_escrow', 'technical', 'launch_authorization'];
 const text = z.string().trim().min(1).max(2_000);
 const optionalText = z.string().trim().max(2_000);
 const id = z.string().uuid();
@@ -19,6 +22,8 @@ const uniqueIds = (maximum: number) => z.array(id).min(1).max(maximum).refine(va
 const importShape = { csv: z.string().min(1).max(1_800_000), source: text, sourceDate: date, permissionReference: text, synthetic: z.boolean().default(false) };
 const contactShape = { phone: text, dncStatus: z.enum(['unknown', 'clear', 'blocked']), litigatorStatus: z.enum(['unknown', 'clear', 'blocked']), scrubbedAt: time, recipientTimezone: optionalText, timezoneEvidence: optionalText, evidenceReference: text };
 export const commandSchema = z.discriminatedUnion('type', [
+  profitScenarioCommandSchema,
+  buyerActivityCommandSchema,
   z.strictObject({ type: z.literal('rescore') }),
   z.strictObject({ type: z.literal('record_expense'), category: z.string().trim().min(1).max(100), amount: amount.positive(), occurredAt: time, reference: text, synthetic: z.boolean() }),
   z.strictObject({ type: z.literal('preview_import'), ...importShape }),
@@ -63,10 +68,6 @@ function actual(value: string, now: string, label: string) {
 }
 function reviewer(context: Context) { if (!['reviewer', 'admin'].includes(context.role)) throw new DomainError('Reviewer permission is required for this approval.', 403); }
 function find<T extends { id: string }>(items: T[], key: string, label: string): T { return items.find(item => item.id === key) ?? fail(`${label} was not found in this workspace.`); }
-function gateGood(state: AcquisitionState, name: GateName, now: string): boolean {
-  const gate = state.gates.find(item => item.name === name);
-  return !!gate && gate.status === 'approved' && ms(gate.reviewedAt) <= ms(now) && (!gate.expiresAt || ms(gate.expiresAt) > ms(now));
-}
 function requireGates(state: AcquisitionState, now: string, names = GENERAL_GATES) {
   for (const name of names) if (!gateGood(state, name, now)) fail(`The ${name} gate needs current approved evidence.`);
 }
@@ -151,38 +152,6 @@ export function parseImport(state: AcquisitionState, input: ImportInput, now: st
   if (state.leads.length + newCount > 5_000) fail('Workspace exceeds the 5,000-lead pilot limit.');
   return { leads, preview: { previewHash, count: leads.length, newCount, updatedCount, eligibleScoreCount: leads.filter(item => item.score >= 8).length, synthetic: !!input.synthetic, rows: leads.map(lead => ({ county: lead.county, apn: lead.apn, ownerName: lead.ownerName, address: lead.address, score: lead.score, unknownSignals: Object.entries(lead.signals).filter(([, value]) => value === null).map(([key]) => key), warnings: [!FARM_ZIPS.includes(lead.zip) ? 'Outside starter farm' : '', lead.signals.nod ? 'NOD specialist evidence required' : '', !lead.mailingAddress ? 'Owner mailing address missing' : '', !lead.phone ? 'No phone selected for scrub' : '', lead.signals.inherited ? 'Inherited/property authority review needed' : ''].filter(Boolean) })) } };
 }
-function suppressed(state: AcquisitionState, lead: Lead) {
-  return state.suppressions.some(item => item.leadId === lead.id || (!!item.phone && item.phone === lead.phone) || (!!item.email && item.email.toLowerCase() === lead.email.toLowerCase()) || (normalized(item.ownerName) === normalized(lead.ownerName) && !!item.mailingAddress && normalized(item.mailingAddress) === normalized(lead.mailingAddress)));
-}
-function localParts(value: string) {
-  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Los_Angeles', year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short', hour: '2-digit', hourCycle: 'h23' }).formatToParts(new Date(value));
-  const item = Object.fromEntries(parts.map(part => [part.type, part.value]));
-  return { day: `${item.year}-${item.month}-${item.day}`, hour: Number(item.hour), weekday: item.weekday };
-}
-function callHours(now: string) { const local = localParts(now); return local.weekday !== 'Sun' && local.hour >= 9 && local.hour < 19; }
-export function eligibility(state: AcquisitionState, lead: Lead, selectedChannel: Channel, now: string, enforceHours = true): string[] {
-  const reasons: string[] = [];
-  if (lead.score < 8) reasons.push('Seller score is below 8.');
-  if (!FARM_ZIPS.includes(lead.zip)) reasons.push('Property is outside the starter farm.');
-  if (suppressed(state, lead)) reasons.push('Owner or contact is permanently suppressed.');
-  if (!lead.synthetic) {
-    for (const name of GENERAL_GATES) if (!gateGood(state, name, now)) reasons.push(`The ${name} gate needs current evidence.`);
-    if (lead.signals.nod && !gateGood(state, 'nod_counsel', now)) reasons.push('The nod_counsel specialist gate needs evidence.');
-  }
-  const evidence = lead.contact;
-  if (!lead.phone || !evidence || evidence.phone !== lead.phone) reasons.push('Current phone-keyed scrub evidence is missing.');
-  else {
-    if (evidence.dncStatus !== 'clear' || evidence.litigatorStatus !== 'clear') reasons.push('DNC and litigator scrub must both be clear.');
-    if (ms(evidence.scrubbedAt) > ms(now) || ms(now) - ms(evidence.scrubbedAt) > 30 * DAY) reasons.push('Scrub evidence is stale or future-dated.');
-    if (selectedChannel === 'call' && (evidence.recipientTimezone !== 'America/Los_Angeles' || !evidence.timezoneEvidence.trim())) reasons.push('Calling needs supported recipient timezone evidence (America/Los_Angeles).');
-  }
-  if (selectedChannel === 'mail' && !/^.+,\s*.+\s[A-Z]{2}\s\d{5}(?:-\d{4})?$/i.test(lead.mailingAddress)) reasons.push('A complete owner mailing address (street, city ST ZIP) is required.');
-  if (selectedChannel === 'call') {
-    if (enforceHours && !callHours(now)) reasons.push('Manual calling hours are 9am–7pm America/Los_Angeles, Monday–Saturday.');
-    if (state.receipts.some(receipt => receipt.channel === 'call' && (receipt.leadId === lead.id || receipt.destination === lead.phone) && localParts(receipt.occurredAt).day === localParts(now).day)) reasons.push('The daily limit is one call attempt per contact.');
-  }
-  return reasons;
-}
 function render(body: string, lead: Lead) {
   const values: Record<string, string> = { owner_name: lead.ownerName, address: lead.address, zip: lead.zip };
   return body.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, key: string) => values[key] ?? fail(`Unsupported template field: ${key}.`));
@@ -266,6 +235,56 @@ export function execute(original: AcquisitionState, input: unknown, context: Con
   const now = context.now;
   let result: unknown;
   switch (command.type) {
+    case 'save_profit_scenario': {
+      find(state.leads, command.leadId, 'Lead');
+      const scenarios = state.profitScenarios ??= [];
+      const previous = scenarios.findIndex(item => item.leadId === command.leadId && item.name === command.name);
+      if (previous < 0 && scenarios.length >= 15_000) fail('The workspace scenario capacity has been reached.');
+      const record = { id: previous < 0 ? randomUUID() : scenarios[previous].id, leadId: command.leadId, name: command.name, inputs: command.inputs, assumptions: command.assumptions, recordedAt: now, actorId: context.actorId };
+      if (previous < 0) scenarios.push(record); else scenarios[previous] = record;
+      result = record; break;
+    }
+    case 'record_buyer_activity': {
+      const activities = state.buyerActivities ??= [];
+      const previous = activities.find(item => item.idempotencyKey === command.idempotencyKey);
+      if (previous) {
+        const keys = ['contractId','buyerId','kind','occurredAt','dueAt','amount','reference','notes','completesTaskId','withdrawsOfferId'] as const;
+        if (keys.some(key => previous[key] !== command[key])) fail('Idempotency key is already used for different buyer activity.');
+        return { state: original, result: previous };
+      }
+      const contract = find(state.contracts, command.contractId, 'Contract');
+      const buyer = find(state.buyers, command.buyerId, 'Buyer');
+      if (contract.synthetic !== buyer.synthetic) fail('Buyer and contract must use the same real or practice record class.');
+      const eventAt = command.occurredAt ?? now;
+      if (ms(eventAt) < ms(contract.signedAt)) fail('Buyer activity cannot precede the signed contract.');
+      const reviewedRelationship = state.packets.some(packet => packet.contractId === contract.id && packet.buyerIds.includes(buyer.id) && packet.approvedAt && ms(packet.approvedAt) <= ms(eventAt));
+      const assignedRelationship = state.assignments.some(item => item.contractId === contract.id && item.buyerId === buyer.id && ms(item.signedAt) <= ms(eventAt));
+      if (!reviewedRelationship && !assignedRelationship) fail('Review a buyer packet for this contract before tracking this buyer relationship.');
+      const pipeline = buildBuyerPipeline(state, now, contract.synthetic).find(item => item.contractId === contract.id && item.buyerId === buyer.id);
+      if (command.kind === 'follow_up_planned') {
+        const reasons = buyerFollowUpBlockers(state, contract, buyer, now);
+        if (pipeline?.stage === 'declined') reasons.push('Buyer declined this deal. Record a new permitted response before planning contact.');
+        if (reasons.length) fail(reasons.join(' '));
+        if (ms(command.dueAt!) < ms(now)) fail('A new follow-up plan cannot be due in the past.');
+        if (localParts(command.dueAt!).day > contract.closingDate) fail('Plan the buyer follow-up no later than the contract closing date.');
+      } else {
+        actual(command.occurredAt!, now, 'Buyer activity date');
+      }
+      if (command.completesTaskId) {
+        const task = find(activities, command.completesTaskId, 'Planned follow-up');
+        if (task.kind !== 'follow_up_planned' || task.contractId !== contract.id || task.buyerId !== buyer.id || pipeline?.plannedTaskId !== task.id) fail('Only this buyer relationship\'s current open task can be completed.');
+        if (ms(command.occurredAt!) < ms(task.recordedAt)) fail('Actual follow-up cannot precede the planned task.');
+      }
+      if (command.withdrawsOfferId) {
+        const offer = find(activities, command.withdrawsOfferId, 'Buyer offer');
+        if (offer.kind !== 'offer_received' || offer.contractId !== contract.id || offer.buyerId !== buyer.id || pipeline?.latestOffer?.activityId !== offer.id) fail('Only this buyer relationship\'s current offer can be withdrawn.');
+        if (ms(command.occurredAt!) < ms(offer.occurredAt!)) fail('Withdrawal cannot precede the offer.');
+      }
+      if (activities.length >= 20_000) fail('The workspace buyer activity capacity has been reached.');
+      const { type: _type, ...fields } = command;
+      const record: BuyerActivity = { ...fields, id: randomUUID(), synthetic: contract.synthetic, recordedAt: now, actorId: context.actorId };
+      activities.push(record); result = record; break;
+    }
     case 'rescore': {
       let changed = 0;
       for (const lead of state.leads) { const scored = scoreSignals(lead.signals); if (scored.score !== lead.score || digest(scored.breakdown) !== digest(lead.breakdown)) { Object.assign(lead, scored, { updatedAt: now }); changed++; } }

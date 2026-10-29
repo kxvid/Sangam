@@ -2,11 +2,13 @@
 
 A private workspace for Kahla Labs LLC's Inland Empire pilot: import authorized seller data, score leads, review evidence and exact outreach materials, export mail and manual calling batches, record real outcomes, and match contracted deals to permitted buyers.
 
-**Mail and calls are manual.** Authorized uploaded exports are validated, deduplicated, scored and matched automatically. Scheduled refreshes re-evaluate stored records without changing their source dates. No SMS, email, automated calls, scraping, skip tracing, AI requests or provider fetching runs in this release. Exporting a file does not mark a touch or start the pilot clock.
+**Mail and calls are manual.** Authorized uploaded exports are validated, deduplicated, scored and matched automatically. Scheduled refreshes re-evaluate stored records without changing their source dates. A separate explicit Census lookup sends only one selected property address and returns suggestions. No SMS, email, automated calls, bulk scraping, skip tracing, AI requests or new PropStream fetching runs in this release. Exporting a file does not mark a touch or start the pilot clock.
 
 ## Start here
 
 - [Operator guide](docs/GETTING_STARTED.md): test the workflow, import real leads and prepare the first batch.
+- [Operations guide](docs/OPERATIONS-GUIDE.md): work queue, profit scenarios, buyer follow-ups, readiness and free data.
+- [Free-data source evidence](docs/FREE-DATA-SOURCES.md): verified availability, provenance, limits and held sources.
 - [Deployment and recovery](docs/DEPLOY.md): credentials, workspace provisioning, migrations, release verification and rollback.
 - [Changes from the original spec](docs/SPEC-CHANGES.md): every material change and its reason.
 - [Implementation and verification ledger](docs/superpowers/plans/2026-10-28-acquisition-manual-pilot.md).
@@ -18,7 +20,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open `/acquisition` for manual operations and `/automation` for Sources, Rules, Jobs and Matches. A Clerk account alone does not grant data access: an administrator must explicitly add an active workspace membership. Historical routes redirect to the desk; historical send/discovery endpoints and CLI jobs are disabled.
+Open `/acquisition` for manual operations, `/automation` for Sources, Rules, Jobs and Matches, and `/operations` for the daily work queue, profit scenarios, buyer history, readiness and public data. A Clerk account alone does not grant data access: an administrator must explicitly add an active workspace membership. Historical routes redirect to the desk; historical send/discovery endpoints and CLI jobs are disabled.
 
 ## Verification
 
