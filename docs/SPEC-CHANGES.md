@@ -101,3 +101,26 @@ The user then clarified that PropStream signup is still needed. Trial signup was
 | 500 monthly mail pieces could meet 2,000 unique leads | Add an explicit manual-contact capacity plan with deduplication and follow-up allocation | Repeated pieces do not create additional unique leads; targets remain measured from actual launch. |
 
 The [launch plan](WHOLESALER-LAUNCH-PLAN.md) records sources, tradeoffs, inputs and acceptance evidence. The original weights/threshold, manual channels, suppression, real-evidence requirements and human deal execution remain unchanged. No real lead, professional approval, touch, offer, contract or collected fee was created by the research tools.
+
+
+## Zero-subscription source decision — October 29, 2026
+
+This supersedes the earlier PropStream selection and trial plan. The operator rejected its expense and requested free alternatives. PropStream's signup remains unfinished. The operator approved PropWire free registration and completed the password step; Browser then verified **Basic Active**, no saved payment methods, a $0 wallet and **10 of 10 monthly skip traces remaining**. The page labels the next cycle November 29; no paid plan, wallet top-up or extra trace was selected.
+
+| Earlier plan | Change | Why |
+|---|---|---|
+| Required PropStream subscription or its temporary trial | PropWire Basic native downloads become the first sample route | Removes the recurring data subscription; the free account was actually verified instead of assuming an existing PropStream account. |
+| Treat free sources as enrichment only | Add PropWire property exports and Riverside's July 1 power-to-sell inventory to the researched source plan | New primary evidence offers useful candidates, with actual county snapshot dates and missing owner/contact fields kept explicit. |
+| Assume a fixed export cap from marketing | Verify the actual native download and account allowance; do not adopt conflicting older unlimited/10k claims | Current terms and marketing differ; no unverified account entitlement is promised. |
+| PropStream-only import wording | Use the existing source-neutral CSV backend with the verified native PropWire mapping | The actual 23-row/74-column export passed the parser and live preview, then persisted in Acquisition. No new database/provider integration was needed. |
+| Skip trace every qualifying lead using paid credits | Use only the verified included allowance for an initial small experiment | Basic's free property data does not provide unlimited free phone leads; no paid overage is authorized. |
+| Free list implies outreach-ready | Explicitly document the retained phone-keyed screening requirement for both mail and calls | Import can work without a phone; release currently cannot. The data-cost pivot does not silently change reviewed channel policy. |
+| Immediate 500-piece scale | Import the actual 23-record first sample, replacing the proposed 25–50 candidates | Avoids expanding the farm merely to reach a round number. All score 7 and remain held; the original threshold and 90-day targets remain. |
+| Search filter labels could imply supported score facts | Keep all blank `Owner Occupied` values as unknown absentee status | The absentee search label is not row-level evidence. Vacancy, estimated equity and completed ownership duration total 7; no points were invented to cross 8. |
+| A single owner or rounded ownership duration | Preserve all named co-owners and use completed years, `floor(months/12)` | Eight rows contain co-owners; rounding tenure up could incorrectly add a point at a scoring boundary. Four bank-related owner-type tags remain review context. |
+
+See [first free-source batch](FREE-LEAD-FIRST-BATCH.md). No sourced candidate is represented as a willing seller, signed contract, permitted contact or collected fee. Mail and calling remain manual.
+
+First free export evidence: the 92503 search returned 23 candidates and native export generation completed with READY status. After browser download permission was declined, the operator downloaded the file manually. The private original has 74 columns; all 23 rows have owner/mailing fields and no duplicate county/APN pairs. No phone/email values were provided. The exact header mapping and source limitations are documented in [the first-batch guide](FREE-LEAD-FIRST-BATCH.md); no personal record content is published here. The overall monthly download cap, current listing status and underlying record observation/update dates remain unverified.
+
+The factual `data_provenance` review was recorded with Codex explicitly identified as reviewer acting under operator instructions, supported by the native export, accepted terms, internal-use scope and limitations. The live preview showed 23 new records, 0 updates and 0 scoring 8+. The real import completed and a refresh verified 23 persisted seller research records, all scoring 7, with 0 mail-ready and 0 call-ready. No other readiness gates were approved; counsel evidence is next. There are 0 touches, 0 offers and 0 contracts, and the 90-day clock has not started. No trace, purchase, outbound contact or runtime code change was required for this import.

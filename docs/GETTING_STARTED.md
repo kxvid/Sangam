@@ -8,13 +8,13 @@ Use a separate test workspace and the **Practice data** checkbox when importing 
 
 The operator sequence is: Import → Seller leads → Mail & calls → record actual activity → qualify and underwrite → record offer and signed contract → Contracts & buyers → reviewed packet → actual delivery → signed assignment → closing. An export or a button click is never proof that a contract was signed, a person contacted or money received.
 
-## Prepare the PropStream export
+## Prepare an authorized property export
 
-In your authorized PropStream account, use the Riverside/San Bernardino farm lists from the original SOP. Retain each relevant distress signal, including notice of default; do not remove a flag to make a lead eligible. The starter ZIPs are:
+Use an authorized native export from the chosen provider and the Riverside/San Bernardino farm from the original SOP. The current zero-subscription route is PropWire Basic; see the [verified native header mapping and free-source first batch](FREE-LEAD-FIRST-BATCH.md). Its first actual 23-row/74-column export was reviewed, mapped and imported on October 29, 2026. Recheck future export schemas; Sangam does not require a PropStream subscription. Retain each relevant distress signal, including notice of default; do not remove a flag to make a lead eligible. The starter ZIPs are:
 
 `92501, 92503, 92505, 92507, 92401, 92404, 92408, 92410, 92551, 92553, 92555, 92335, 92336, 91761, 91762, 92376, 92324`
 
-Download the seller data using your account's available export option. Export screens/field names can vary by vendor plan; this guide specifies Sangam's required mapping, not a claim of access to your PropStream account. Use **Import → CSV template**, rename/map source columns to those headers, and save as UTF-8 CSV. Keep the raw export privately for source verification.
+Download the seller data using your account's available export option. Export screens/field names can vary by vendor plan; the table below specifies Sangam's targets, while the linked first-batch guide records the verified PropWire file's headers and limitations. Use **Import → CSV template**, rename/map source columns to those headers, and save as UTF-8 CSV. Keep the raw export privately for source verification.
 
 | Sangam column | What to put in it |
 |---|---|
@@ -44,9 +44,11 @@ Then, in **Import**, supply the CSV, source name, actual source/export date and 
 
 Scoring stays at the original weights and threshold of 8. A high score alone does not mean a record is eligible to contact.
 
+**First real import, verified October 29:** the source review was recorded and all 23 PropWire records persisted after refresh. Every record scored 7; Today showed 0 mail-ready and 0 call-ready. Blank `Owner Occupied` cells stayed unknown rather than becoming absentee points. All named co-owners were retained, and ownership months were converted to completed years with `floor(months/12)`. No phone/email data was supplied; current listing status and underlying observation dates remain unverified. The source review does not approve professional or channel gates: counsel evidence remains the next blocked gate, with no touches, offers, contracts or started 90-day clock.
+
 ## Automatically process exports and explain matches
 
-This release supports **PropStream exports only**, as selected for this pilot. Exporting the vendor data remains your step; after upload, Sangam validates it, deduplicates parcels and creates explained research decisions. An enabled schedule re-evaluates records already uploaded. It is not a PropStream scraper, provider API connection or source of newly collected data.
+The upload backend accepts authorized mapped CSVs with their actual source name. The original pilot selected PropStream; the latest operator direction is to use free alternatives. Any remaining PropStream UI wording describes the original route, not a vendor restriction in the importer. Exporting the vendor data remains your step; after upload, Sangam validates it, deduplicates parcels and creates explained research decisions. An enabled schedule re-evaluates records already uploaded. It is not a PropStream scraper, provider API connection or source of newly collected data.
 
 Open **Sourcing & matching** and select the correct workspace. Use the separate practice workspace for a rehearsal. The four screens are **Sources**, **Rules**, **Jobs** and **Matches**.
 
