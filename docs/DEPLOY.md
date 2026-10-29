@@ -5,11 +5,21 @@ This release is a private pilot, with automatic providers disabled in code. It d
 ## Configuration and identity
 
 1. Use Node 22 and `npm ci`. The committed lockfile is the release dependency baseline.
-2. Configure a Clerk application for the intended deployment. Set the publishable and secret keys and redirect paths from `.env.example`. A missing configuration fails closed. Signups have no workspace membership by default. Disable open registration in Clerk if this is an invite-only deployment.
+2. Configure a Clerk application for the intended deployment. Set the publishable and secret keys, redirect paths and **server-only** `CLERK_AUTHORIZED_PARTIES` from `.env.example`. Missing keys or a missing/invalid origin allowlist fail closed with a private 503 response. Signups have no workspace membership by default. Disable open registration in Clerk if this is an invite-only deployment.
 3. Configure a dedicated Supabase project URL and **server-only** service role key. Never use a `NEXT_PUBLIC_` prefix for the service key. No browser Supabase client or direct authenticated writes are part of this release.
 4. Use separate credentials/databases for preview and production. No Twilio, Resend, PropertyRadar, skip-tracing, RentCast or Anthropic credentials are needed. Remove old provider credentials and cron/webhook configuration from the hosting project; the corresponding code paths also refuse operation.
 
 Clerk verifies identity on the server; stored database membership grants workspace access. The server never accepts a role or user identity from submitted JSON. Direct Supabase JWT integration is not required for the server-mediated UI; RLS still protects tables from authenticated/anonymous clients. Do not add browser database writes without a separate security review.
+
+### Exact Clerk origins and private hosting
+
+For the intended production host, configure `CLERK_AUTHORIZED_PARTIES=https://sangam.kahlalabs.com`. This is an explicit operator setting, not a default or a claim that DNS, Clerk production or hosted sign-in has been verified. The comma-separated list accepts at most 16 canonical HTTPS origins, with no trailing slash, path, query, fragment, credentials or wildcard. Each listed origin is independently trusted, so include only hosts you control. Host, Origin and forwarded request headers cannot add to this trust list. Clerk checks the signed session's authorized-party claim against it.
+
+For local `npm run dev`, use `http://localhost:3000` (or an explicitly listed HTTP loopback origin/port). HTTP origins are rejected outside `NODE_ENV=development`. Production-built local testing therefore needs the fail-closed smoke test or an explicitly configured HTTPS host. Preview deployments must have their own exact HTTPS origin list and separate development keys/data; do not put localhost or a wildcard `*.vercel.app` in production. Changing any deployment environment configuration requires redeployment and a fresh sign-in check.
+
+Clerk supports development keys on a `*.vercel.app` preview; production requires an owned domain, production instance, verified DNS/certificates and production keys. Development users do not transfer to the production instance: provision workspace membership for the verified production user ID. Keep Vercel Authentication set to **All Deployments** during setup and private pilot verification, including custom domains. Its project API setting is `ssoProtection.deploymentType = "all"`. Standard Protection excludes production domains. Do not create shareable bypass links or infer that Vercel access grants Sangam workspace access.
+
+Sources checked 2026-10-28: [Clerk authorized parties](https://clerk.com/docs/reference/nextjs/clerk-middleware), [Clerk environments](https://clerk.com/docs/guides/development/managing-environments), [Clerk on Vercel](https://clerk.com/docs/guides/development/deployment/vercel), [Vercel Deployment Protection](https://vercel.com/docs/deployment-protection), [Vercel project update API](https://vercel.com/docs/rest-api/projects/update-an-existing-project).
 
 ## Migrate a test project
 
@@ -56,6 +66,8 @@ The database test helper creates a socket-only temporary PostgreSQL cluster, app
 CI can supply `PG_TEST_URL` pointing to a fresh, disposable database whose name starts with `sangam_test`. That path applies migrations and runs database assertions, but the local helper's independent dump/restore check is separate. Never point it at a customer database. The browser fixture test uses the real UI and domain against fictional in-memory data; it does not establish production Clerk sign-in or provider delivery.
 
 In the configured test deployment, verify with two real test identities: workspace A cannot see B; an unprovisioned account sees no leads; an operator cannot approve evidence/templates/batches; revocation denies the next request; a stale form cannot overwrite a newer change. Verify login, logout and refresh on desktop/mobile. Record the deployed commit and results in the workspace's technical evidence only after completing those checks.
+
+Authentication boundary tests use locally signed fictional sessions with the real Clerk verifier and a local public-key fixture. They check accepted configured origins, rejected neighboring/spoofed origins, exact ports, preview origins and missing/invalid configuration. They do not establish live Clerk production sign-in. On the actual hosted release, confirm that an unauthenticated browser first encounters Vercel protection, then complete Clerk sign-in on `https://sangam.kahlalabs.com` and verify membership-based access before importing real data.
 
 ## Production release
 

@@ -11,19 +11,21 @@ export const dynamic = 'force-dynamic';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider
-      appearance={{
-        variables: {
-          colorPrimary: "#10b981",
-          colorBackground: "#0e1014",
-          colorForeground: "#e7e9ef",
-          borderRadius: "0.75rem",
-        },
-      }}
-    >
-      <html lang="en" className="dark">
-        <body>{children}</body>
-      </html>
-    </ClerkProvider>
+    <html lang="en" className="dark">
+      <body>
+        <ClerkProvider
+          appearance={{
+            variables: {
+              colorPrimary: "#10b981",
+              colorBackground: "#0e1014",
+              colorForeground: "#e7e9ef",
+              borderRadius: "0.75rem",
+            },
+          }}
+        >
+          {children}
+        </ClerkProvider>
+      </body>
+    </html>
   );
 }

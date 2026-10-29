@@ -16,7 +16,7 @@
     "outreach": "tsx src/jobs/send-outreach.ts",
     "typecheck": "tsc --noEmit",
     "test": "npm run test:unit && npm run test:db",
-    "test:unit": "node --import tsx --test tests/acquisition.test.ts tests/http.test.ts tests/side-effects.test.ts tests/capacity.test.ts",
+    "test:unit": "node --import tsx --test tests/acquisition.test.ts tests/http.test.ts tests/auth.test.ts tests/side-effects.test.ts tests/capacity.test.ts",
     "test:db": "node scripts/test-database.mjs",
     "check": "npm run typecheck && npm test && npm run build",
     "test:browser": "node --import tsx scripts/test-browser.mjs",
